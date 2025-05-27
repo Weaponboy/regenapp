@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "234895274446",
+    "project_id": "regenappdata",
+    "storage_bucket": "regenappdata.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:234895274446:android:7411cd89fb21aac157bb9f",
+        "android_client_info": {
+          "package_name": "dev.weaponboy.regendataapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCqmR8hzc5Roi_m3pr3EM1lk5mPmhL41Qw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
