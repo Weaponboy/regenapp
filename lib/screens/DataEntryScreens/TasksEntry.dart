@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
-class ChickenDataEntry extends StatelessWidget {
-  final TextEditingController eggCountController = TextEditingController();
+class TasksEntry extends StatelessWidget {
+  final TextEditingController milkController = TextEditingController();
+  final TextEditingController cowsController = TextEditingController();
   final TextEditingController locationController = TextEditingController();
-  final TextEditingController notesController = TextEditingController();
   final TextEditingController dateController = TextEditingController(text: DateFormat('yyyy-MM-dd').format(DateTime.now()));
 
   @override
@@ -17,22 +17,26 @@ class ChickenDataEntry extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Chicken Data',
+              'Cow Data',
               style: TextStyle(fontSize: 30, color: Colors.black),
             ),
             TextField(
-              controller: eggCountController,
-              decoration: InputDecoration(labelText: 'Number of eggs collected'),
+              controller: milkController,
+              decoration: InputDecoration(labelText: 'Amount of milk'),
               keyboardType: TextInputType.number,
               onChanged: (value) {
                 if (value.isNotEmpty && double.tryParse(value) == null) {
-                  eggCountController.text = value.substring(0, value.length - 1);
+                  milkController.text = value.substring(0, value.length - 1);
                 }
               },
             ),
             TextField(
+              controller: cowsController,
+              decoration: InputDecoration(labelText: 'Cows milked'),
+            ),
+            TextField(
               controller: locationController,
-              decoration: InputDecoration(labelText: 'Location of the chickens'),
+              decoration: InputDecoration(labelText: 'Location of the cows'),
             ),
             TextField(
               controller: dateController,
@@ -44,22 +48,18 @@ class ChickenDataEntry extends StatelessWidget {
                 }
               },
             ),
-            TextField(
-              controller: notesController,
-              decoration: InputDecoration(labelText: 'Notes/things to add'),
-            ),
             ElevatedButton(
               onPressed: () {
-                if (eggCountController.text.isNotEmpty && locationController.text.isNotEmpty) {
-                  FirebaseFirestore.instance.collection('ChickenData').add({
-                    'Number of eggs': int.parse(eggCountController.text),
-                    'Location of the Chickens': locationController.text,
+                if (milkController.text.isNotEmpty && cowsController.text.isNotEmpty) {
+                  FirebaseFirestore.instance.collection('CowData').add({
+                    'Amount of milk': int.parse(milkController.text),
+                    'Cows milked': cowsController.text,
+                    'Location of the cows': locationController.text,
                     'Date': dateController.text,
-                    'Notes': notesController.text,
                   });
-                  eggCountController.clear();
+                  milkController.clear();
+                  cowsController.clear();
                   locationController.clear();
-                  notesController.clear();
                   dateController.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
                 }
               },

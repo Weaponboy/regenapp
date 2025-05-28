@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
-class CowDataEntry extends StatelessWidget {
+class ButcheryEntry extends StatelessWidget {
   final TextEditingController milkController = TextEditingController();
   final TextEditingController cowsController = TextEditingController();
   final TextEditingController locationController = TextEditingController();
