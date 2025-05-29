@@ -1,20 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:regendataapp/Colors.dart';
+import 'package:regendataapp/screens/AnimalDataEntry.dart';
 import 'package:regendataapp/screens/Customize.dart';
-import 'package:regendataapp/screens/DataEntry.dart';
+import 'package:regendataapp/screens/ManagementDataEntry.dart';
 
 class HomeScreen extends StatelessWidget {
   final List<Map<String, dynamic>> cardData = [
-    {'id': '1', 'title': 'Data entry'},
-    {'id': '2', 'title': 'Customize'},
+    {'id': '1', 'title': 'Animals'},
+    {'id': '2', 'title': 'Management'},
+    {'id': '3', 'title': 'Customize'},
   ];
 
   void _navigateToPage(BuildContext context, String id) {
     Widget destinationPage;
     switch (id) {
       case '1':
-        destinationPage = DataEntry();
+        destinationPage = AnimalDataEntry();
         break;
       case '2':
+        destinationPage = ManagementDataEntry();
+        break;
+      case '3':
         destinationPage = Customize();
         break;
       default:
@@ -37,7 +43,7 @@ class HomeScreen extends StatelessWidget {
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('grass.jpg'),
+            image: AssetImage('assets/grass.jpg'),
             fit: BoxFit.cover,
           ),
         ),
@@ -45,7 +51,7 @@ class HomeScreen extends StatelessWidget {
           children: [
             // Bottom-left circle
             Positioned(
-              top: 20,
+              top: 70,
               left: 0,
               right: 0,
               child: Center(
@@ -76,7 +82,7 @@ class HomeScreen extends StatelessWidget {
                   height: circleSize,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.green,
+                    color: colors().circleGreen,
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black26,
@@ -99,10 +105,10 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ),
-            // Bottom-right circle
             Positioned(
-              right: padding,
-              top: bottomPosition,
+              top: bottomPosition - 120,
+              left: 0,
+              right: 0,
               child: GestureDetector(
                 onTap: () => _navigateToPage(context, cardData[1]['id']),
                 child: Container(
@@ -110,7 +116,7 @@ class HomeScreen extends StatelessWidget {
                   height: circleSize,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.green,
+                    color: colors().circleGreen,
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black26,
@@ -122,6 +128,40 @@ class HomeScreen extends StatelessWidget {
                   child: Center(
                     child: Text(
                       cardData[1]['title'],
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // Bottom-right circle
+            Positioned(
+              right: padding,
+              top: bottomPosition,
+              child: GestureDetector(
+                onTap: () => _navigateToPage(context, cardData[2]['id']),
+                child: Container(
+                  width: circleSize,
+                  height: circleSize,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: colors().circleGreen,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 4,
+                        offset: Offset(6, 6),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Text(
+                      cardData[2]['title'],
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 12,

@@ -1,52 +1,38 @@
 import 'package:flutter/material.dart';
-import 'package:regendataapp/screens/DataEntryScreens/BeefEntry.dart';
-import 'package:regendataapp/screens/DataEntryScreens/ButcheryEntry.dart';
-import 'package:regendataapp/screens/DataEntryScreens/ChickenDataEntry.dart';
-import 'package:regendataapp/screens/DataEntryScreens/DairyEntry.dart';
-import 'package:regendataapp/screens/DataEntryScreens/FinanceEntry.dart';
-import 'package:regendataapp/screens/DataEntryScreens/SlaughterEntry.dart';
-import 'package:regendataapp/screens/DataEntryScreens/TasksEntry.dart';
-import 'package:regendataapp/screens/OutputData.dart';
+import 'package:regendataapp/Colors.dart';
+import 'package:regendataapp/screens/DataEntryScreens/Soil_and_Carbon/Frost.dart';
+import 'package:regendataapp/screens/DataEntryScreens/Soil_and_Carbon/Rain.dart';
+import 'package:regendataapp/screens/DataEntryScreens/Soil_and_Carbon/Snow.dart';
 import 'dart:math';
 
-class DataEntry extends StatelessWidget {
+import 'package:regendataapp/screens/DataEntryScreens/Soil_and_Carbon/SoilCarbon.dart';
+
+class SoilAndClimate extends StatelessWidget {
 
   final List<Map<String, dynamic>> cardData = [
-    {'id': '1', 'title': 'Dairy cows'},
-    {'id': '2', 'title': 'Beef cows'},
-    {'id': '3', 'title': 'Eggs'},
-    {'id': '4', 'title': 'Slaughter'},
-    {'id': '5', 'title': 'Tasks'},
-    {'id': '6', 'title': 'Butchery'},
-    {'id': '7', 'title': 'Finances'},
+    {'id': '1', 'title': 'Rain'},
+    {'id': '2', 'title': 'Snow'},
+    {'id': '3', 'title': 'Frost'},
+    {'id': '4', 'title': 'Soil carbon'},
   ];
 
   void _navigateToPage(BuildContext context, String id) {
     Widget destinationPage;
     switch (id) {
       case '1':
-        destinationPage = DairyEntry();
+        destinationPage = Rain();
         break;
       case '2':
-        destinationPage = BeefEntry();
+        destinationPage = Snow();
         break;
       case '3':
-        destinationPage = EggsEntry();
+        destinationPage = Frost();
         break;
       case '4':
-        destinationPage = SlaughterEntry();
-        break;
-      case '5':
-        destinationPage = TasksEntry();
-        break;
-      case '6':
-        destinationPage = ButcheryEntry();
-        break;
-      case '7':
-        destinationPage = EggsEntry();
+        destinationPage = SoilCarbon();
         break;
       default:
-        destinationPage = FinanceEntry();
+        destinationPage = SoilAndClimate();
     }
     Navigator.push(
       context,
@@ -66,7 +52,7 @@ class DataEntry extends StatelessWidget {
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('grass.jpg'),
+            image: AssetImage('assets/wheat.jpeg'),
             fit: BoxFit.cover,
           ),
         ),
@@ -111,7 +97,7 @@ class DataEntry extends StatelessWidget {
                     height: circleSize,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.green,
+                      color: colors().circleGreen,
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black26,

@@ -1,18 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:regendataapp/LoginCode/CurrentUserData.dart';
 import 'package:regendataapp/screens/home.dart';
 import 'package:regendataapp/LoginCode/screens/register.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
   _LoginPageState createState() => _LoginPageState();
 }
 
-
 class _LoginPageState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _auth = FirebaseAuth.instance;
+
+  void getUsernameByEmail(String email) async {
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('Users')
+        .where('email', isEqualTo: email)
+        .limit(1)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      currentUserData().username = querySnapshot.docs.first.get('username');
+    }
+  }
+
+  void getAdminByEmail(String email) async {
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('Users')
+        .where('email', isEqualTo: email)
+        .limit(1)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      currentUserData().admin = querySnapshot.docs.first.get('admin');
+    }
+  }
 
   Future<void> _login() async {
     try {
@@ -20,6 +45,11 @@ class _LoginPageState extends State<LoginScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+
+      currentUserData().email = _emailController.text.trim();
+      getUsernameByEmail(currentUserData().email);
+      getAdminByEmail(currentUserData().email);
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomeScreen()),

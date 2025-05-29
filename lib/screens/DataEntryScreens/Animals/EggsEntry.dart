@@ -12,6 +12,7 @@ class EggsEntrStatey extends State<EggsEntry> {
 
   final TextEditingController eggCountController = TextEditingController();
   final TextEditingController mortalityController = TextEditingController();
+  final TextEditingController sacksUsedController = TextEditingController();
   final TextEditingController notesController = TextEditingController();
   final TextEditingController dateController = TextEditingController(text: DateFormat('yyyy-MM-dd').format(DateTime.now()));
 
@@ -52,6 +53,19 @@ class EggsEntrStatey extends State<EggsEntry> {
             TextField(
               controller: mortalityController,
               decoration: InputDecoration(labelText: 'Mortality?'),
+            ),
+
+            SizedBox(height: 20),
+
+            TextField(
+              controller: sacksUsedController,
+              decoration: InputDecoration(labelText: 'Food sacks used'),
+              keyboardType: TextInputType.number,
+              onChanged: (value) {
+                if (value.isNotEmpty && double.tryParse(value) == null) {
+                  sacksUsedController.text = value.substring(0, value.length - 1);
+                }
+              },
             ),
 
             SizedBox(height: 20),
@@ -125,6 +139,7 @@ class EggsEntrStatey extends State<EggsEntry> {
                   FirebaseFirestore.instance.collection('ChickenData').add({
                     'Number of eggs': int.parse(eggCountController.text),
                     'Mortality?': mortalityController.text,
+                    'Sacks used': sacksUsedController.text,
                     'Date': dateController.text,
                     'Notes': notesController.text,
                     'Calcium': Calcium,
@@ -136,6 +151,7 @@ class EggsEntrStatey extends State<EggsEntry> {
                   setState(() {
                     eggCountController.clear();
                     mortalityController.clear();
+                    sacksUsedController.clear();
                     notesController.clear();
                     dateController.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
                     Calcium = false;
