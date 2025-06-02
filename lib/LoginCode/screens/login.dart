@@ -4,6 +4,7 @@ import 'package:regendataapp/LoginCode/CurrentUserData.dart';
 import 'package:regendataapp/screens/home.dart';
 import 'package:regendataapp/LoginCode/screens/register.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -15,6 +16,8 @@ class _LoginPageState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   final _auth = FirebaseAuth.instance;
 
+  currentUserData userData = new currentUserData();
+
   void getUsernameByEmail(String email) async {
     final querySnapshot = await FirebaseFirestore.instance
         .collection('Users')
@@ -23,7 +26,7 @@ class _LoginPageState extends State<LoginScreen> {
         .get();
 
     if (querySnapshot.docs.isNotEmpty) {
-      currentUserData().username = querySnapshot.docs.first.get('username');
+      userData.username = querySnapshot.docs.first.get('username');
     }
   }
 
@@ -35,27 +38,29 @@ class _LoginPageState extends State<LoginScreen> {
         .get();
 
     if (querySnapshot.docs.isNotEmpty) {
-      currentUserData().admin = querySnapshot.docs.first.get('admin');
+      userData.admin = querySnapshot.docs.first.get('admin');
     }
   }
 
   Future<void> _login() async {
     try {
       // Set persistence to browserLocalPersistence for web
-      await _auth.setPersistence(Persistence.LOCAL);
+      if (kIsWeb) {
+        await _auth.setPersistence(Persistence.LOCAL);
+      }
 
       await _auth.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
-      currentUserData().email = _emailController.text.trim();
-      getUsernameByEmail(currentUserData().email);
-      getAdminByEmail(currentUserData().email);
+      userData.email = _emailController.text.trim();
+      getUsernameByEmail(userData.email);
+      getAdminByEmail(userData.email);
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
+        MaterialPageRoute(builder: (context) => HomeScreen(userData: userData,)),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

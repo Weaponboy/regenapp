@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:regendataapp/Colors.dart';
+import 'package:regendataapp/LoginCode/CurrentUserData.dart';
 import 'package:regendataapp/screens/AnimalDataEntry.dart';
 import 'package:regendataapp/screens/Customize.dart';
 import 'package:regendataapp/screens/ManagementDataEntry.dart';
@@ -11,6 +12,9 @@ class HomeScreen extends StatelessWidget {
     {'id': '2', 'title': 'Management'},
     {'id': '3', 'title': 'Customize'},
   ];
+
+  currentUserData userData = new currentUserData();
+  HomeScreen({required this.userData});
 
   void _navigateToPage(BuildContext context, String id) {
     Widget destinationPage;
@@ -25,7 +29,7 @@ class HomeScreen extends StatelessWidget {
         destinationPage = Customize();
         break;
       default:
-        destinationPage = HomeScreen();
+        destinationPage = HomeScreen(userData: userData,);
     }
     Navigator.push(
       context,
@@ -61,7 +65,7 @@ class HomeScreen extends StatelessWidget {
               right: 0,
               child: Center(
                 child: Text(
-                  'Home',
+                  'Hello ' + userData.username,
                   style: TextStyle(
                     fontSize: 60,
                     fontFamily: 'Roboto',

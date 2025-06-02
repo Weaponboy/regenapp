@@ -28,7 +28,7 @@ class TasksEntryState extends State<TasksEntry> {
     QuerySnapshot snapshot =
     await FirebaseFirestore.instance.collection('Users').get();
     setState(() {
-      _users = snapshot.docs.map((doc) => doc['UserName'] as String).toList();
+      _users = snapshot.docs.map((doc) => doc['username'] as String).toList();
     });
   }
 

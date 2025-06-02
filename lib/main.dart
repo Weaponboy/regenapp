@@ -28,14 +28,14 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => AuthWrapper(),
         '/login': (context) => LoginScreen(),
-        '/home': (context) => HomeScreen(),
+        '/home': (context) => HomeScreen(userData: currentUserData()),
       },
     );
   }
 }
 
 class AuthWrapper extends StatelessWidget {
-  Future<void> _fetchUserData(String email) async {
+  Future<void> _fetchUserData(String email, currentUserData userData) async {
     final querySnapshot = await FirebaseFirestore.instance
         .collection('Users')
         .where('email', isEqualTo: email)
@@ -43,27 +43,40 @@ class AuthWrapper extends StatelessWidget {
         .get();
 
     if (querySnapshot.docs.isNotEmpty) {
-      currentUserData().username = querySnapshot.docs.first.get('username');
-      currentUserData().admin = querySnapshot.docs.first.get('admin');
-      print(currentUserData().username);
-      print(currentUserData().admin);
+      userData.username = querySnapshot.docs.first.get('username');
+      userData.admin = querySnapshot.docs.first.get('admin');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
+
       stream: FirebaseAuth.instance.authStateChanges(),
+
       builder: (context, snapshot) {
+
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
         }
+
         if (snapshot.hasData) {
+
           final user = snapshot.data!;
-          print(user.email);
-          currentUserData().email = user.email ?? '';
-          _fetchUserData(user.email ?? '');
-          return HomeScreen();
+          final userData = currentUserData();
+          userData.email = user.email ?? '';
+
+          return FutureBuilder(
+
+            future: _fetchUserData(user.email ?? '', userData),
+
+            builder: (context, futureSnapshot) {
+              if (futureSnapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
+              return HomeScreen(userData: userData);
+            },
+          );
         }
         return LoginScreen();
       },
