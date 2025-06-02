@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:regendataapp/Colors.dart';
 import 'package:regendataapp/screens/AnimalDataEntry.dart';
 import 'package:regendataapp/screens/Customize.dart';
@@ -32,12 +33,17 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _logout(BuildContext context) async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.pushReplacementNamed(context, '/login');
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final circleSize = 90.0; // Size of each small circle
-    final padding = 50.0; // Padding from edges
-    final bottomPosition = size.height - circleSize - (padding + 50); // Same height for both
+    final circleSize = 90.0;
+    final padding = 50.0;
+    final bottomPosition = size.height - circleSize - (padding + 50);
 
     return Scaffold(
       body: Container(
@@ -49,7 +55,6 @@ class HomeScreen extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            // Bottom-left circle
             Positioned(
               top: 70,
               left: 0,
@@ -59,16 +64,30 @@ class HomeScreen extends StatelessWidget {
                   'Home',
                   style: TextStyle(
                     fontSize: 60,
-                    fontFamily: 'Roboto', // Popular, clean font (ensure it's added in pubspec.yaml)
+                    fontFamily: 'Roboto',
                     shadows: [
                       Shadow(
                         blurRadius: 10.0,
-                        color: Colors.black.withOpacity(0.5), // Semi-transparent black shadow
-                        offset: Offset(2.0, 2.0), // Slight offset for depth
+                        color: Colors.black.withOpacity(0.5),
+                        offset: Offset(2.0, 2.0),
                       ),
                     ],
-                    color: Colors.white, // Maintains visibility
+                    color: Colors.white,
                   ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 20,
+              right: 20,
+              child: ElevatedButton(
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all(Colors.black),
+                ),
+                onPressed: () => _logout(context),
+                child: Text(
+                  'Logout',
+                  style: TextStyle(fontSize: 14, color: Colors.white),
                 ),
               ),
             ),
@@ -139,7 +158,6 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ),
-            // Bottom-right circle
             Positioned(
               right: padding,
               top: bottomPosition,
@@ -176,7 +194,6 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
-
     );
   }
 }

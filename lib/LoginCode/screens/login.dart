@@ -41,6 +41,9 @@ class _LoginPageState extends State<LoginScreen> {
 
   Future<void> _login() async {
     try {
+      // Set persistence to browserLocalPersistence for web
+      await _auth.setPersistence(Persistence.LOCAL);
+
       await _auth.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
@@ -65,72 +68,57 @@ class _LoginPageState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-          padding: EdgeInsets.all(60),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
+        padding: EdgeInsets.all(60),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Login',
+              style: TextStyle(fontSize: 30, color: Colors.black),
+            ),
+            SizedBox(height: 20),
+            TextField(
+              controller: _emailController,
+              decoration: InputDecoration(labelText: "Email"),
+              style: TextStyle(color: Colors.black),
+            ),
+            SizedBox(height: 16, width: 12),
+            TextField(
+              controller: _passwordController,
+              decoration: InputDecoration(labelText: "Password"),
+              style: TextStyle(color: Colors.black),
+              obscureText: true,
+            ),
+            SizedBox(height: 24),
+            ElevatedButton(
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all(Colors.black),
+              ),
+              onPressed: _login,
+              child: Text(
                 'Login',
-                style: TextStyle(
-                  fontSize: 30,
-                  color: Colors.black
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.white),
               ),
-              SizedBox(height: 20),
-              TextField(
-                controller: _emailController,
-                decoration: InputDecoration(labelText: "Email"),
-                style: TextStyle(
-                    color: Colors.black
-                ),
+            ),
+            SizedBox(height: 24),
+            ElevatedButton(
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all(Colors.black),
               ),
-              SizedBox(height: 16, width: 12),
-              TextField(
-                controller: _passwordController,
-                decoration: InputDecoration(labelText: "Password"),
-                style: TextStyle(
-                  color: Colors.black
-                ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => RegisterScreen()),
+                );
+              },
+              child: Text(
+                "Don't have an account? Register",
+                style: TextStyle(fontSize: 14, color: Colors.white),
               ),
-              SizedBox(height: 24),
-              ElevatedButton(
-                  style: ButtonStyle(
-                    backgroundColor: WidgetStateProperty.all(Colors.black),
-                  ),
-                  onPressed: _login,
-                  child: Text(
-
-                      'Login',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white
-                      ),
-                  )
-
-              ),
-              SizedBox(height: 24),
-              ElevatedButton(
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(Colors.black),
-                ),
-                onPressed: (){
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => RegisterScreen()),
-                  );
-                },
-                child: Text(
-                  "Don't have an account? Register",
-                  style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white
-                  ),
-                )
-              ),
-            ],
-          ),
+            ),
+          ],
+        ),
       ),
     );
-    throw UnimplementedError();
   }
 }

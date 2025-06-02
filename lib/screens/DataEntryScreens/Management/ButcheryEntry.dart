@@ -2,11 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
-class ButcheryEntry extends StatelessWidget {
-  final TextEditingController milkController = TextEditingController();
-  final TextEditingController cowsController = TextEditingController();
-  final TextEditingController locationController = TextEditingController();
+class ButcheryEntry extends StatefulWidget {
+  @override
+  ButcheryEntryState createState() => ButcheryEntryState();
+}
+
+class ButcheryEntryState extends State<ButcheryEntry> {
+
+
   final TextEditingController dateController = TextEditingController(text: DateFormat('yyyy-MM-dd').format(DateTime.now()));
+
+  String? _selectedItem;
+  List<String> _items = [];
+
+  @override
+  void initState() {
+    super.initState();
+    getCarcasses();
+  }
+
+  Future<void> getCarcasses() async {
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('Carcasses')
+        .where('Animal type', isEqualTo: 'Cow')
+        .get();
+    setState(() {
+      _items = snapshot.docs.map((doc) => '${doc['ID']} + ${doc['Name']}').toList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,27 +40,31 @@ class ButcheryEntry extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Cow Data',
+              'Beef butchery data',
               style: TextStyle(fontSize: 30, color: Colors.black),
             ),
-            TextField(
-              controller: milkController,
-              decoration: InputDecoration(labelText: 'Amount of milk'),
-              keyboardType: TextInputType.number,
-              onChanged: (value) {
-                if (value.isNotEmpty && double.tryParse(value) == null) {
-                  milkController.text = value.substring(0, value.length - 1);
-                }
+
+            SizedBox(height: 20),
+
+            DropdownButton<String>(
+              isExpanded: true,
+              value: _selectedItem,
+              hint: Text('Select a carcass'),
+              items: _items.map((String item) {
+                return DropdownMenuItem<String>(
+                  value: item,
+                  child: Text(item),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedItem = newValue;
+                });
               },
             ),
-            TextField(
-              controller: cowsController,
-              decoration: InputDecoration(labelText: 'Cows milked'),
-            ),
-            TextField(
-              controller: locationController,
-              decoration: InputDecoration(labelText: 'Location of the cows'),
-            ),
+
+            SizedBox(height: 20),
+
             TextField(
               controller: dateController,
               decoration: InputDecoration(labelText: 'Date'),
@@ -48,20 +75,19 @@ class ButcheryEntry extends StatelessWidget {
                 }
               },
             ),
+
+            SizedBox(height: 20),
+
             ElevatedButton(
               onPressed: () {
-                if (milkController.text.isNotEmpty && cowsController.text.isNotEmpty) {
-                  FirebaseFirestore.instance.collection('CowData').add({
-                    'Amount of milk': int.parse(milkController.text),
-                    'Cows milked': cowsController.text,
-                    'Location of the cows': locationController.text,
-                    'Date': dateController.text,
-                  });
-                  milkController.clear();
-                  cowsController.clear();
-                  locationController.clear();
+                FirebaseFirestore.instance.collection('BeefData').add({
+                  'Location': _selectedItem,
+                  'Date': dateController.text,
+                });
+                setState(() {
+                  _selectedItem = null;
                   dateController.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
-                }
+                });
               },
               child: Text('Submit'),
             ),
