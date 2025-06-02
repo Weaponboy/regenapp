@@ -10,6 +10,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart'; // This file will be generated after setup
 
 Future<void> main() async {
+
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Firebase with platform-specific options
@@ -24,6 +25,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       initialRoute: '/',
       routes: {
         '/': (context) => AuthWrapper(),

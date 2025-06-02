@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:regendataapp/Colors.dart';
 import 'package:regendataapp/LoginCode/CurrentUserData.dart';
 import 'package:regendataapp/screens/AnimalDataEntry.dart';
@@ -13,7 +14,7 @@ class HomeScreen extends StatelessWidget {
     {'id': '3', 'title': 'Customize'},
   ];
 
-  currentUserData userData = new currentUserData();
+  final currentUserData userData;
   HomeScreen({required this.userData});
 
   void _navigateToPage(BuildContext context, String id) {
@@ -29,7 +30,7 @@ class HomeScreen extends StatelessWidget {
         destinationPage = Customize();
         break;
       default:
-        destinationPage = HomeScreen(userData: userData,);
+        destinationPage = HomeScreen(userData: userData);
     }
     Navigator.push(
       context,
@@ -40,6 +41,10 @@ class HomeScreen extends StatelessWidget {
   Future<void> _logout(BuildContext context) async {
     await FirebaseAuth.instance.signOut();
     Navigator.pushReplacementNamed(context, '/login');
+  }
+
+  Future<void> _deleteTask(String taskId) async {
+    await FirebaseFirestore.instance.collection('Tasks').doc(taskId).delete();
   }
 
   @override
@@ -63,22 +68,96 @@ class HomeScreen extends StatelessWidget {
               top: 70,
               left: 0,
               right: 0,
-              child: Center(
-                child: Text(
-                  'Hello ' + userData.username,
-                  style: TextStyle(
-                    fontSize: 60,
-                    fontFamily: 'Roboto',
-                    shadows: [
-                      Shadow(
-                        blurRadius: 10.0,
-                        color: Colors.black.withOpacity(0.5),
-                        offset: Offset(2.0, 2.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Text(
+                      'Hello ' + userData.username,
+                      style: TextStyle(
+                        fontSize: 60,
+                        fontFamily: 'Roboto',
+                        shadows: [
+                          Shadow(
+                            blurRadius: 10.0,
+                            color: Colors.black.withOpacity(0.5),
+                            offset: Offset(2.0, 2.0),
+                          ),
+                        ],
+                        color: Colors.white,
                       ),
-                    ],
-                    color: Colors.white,
+                    ),
                   ),
-                ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16.0, top: 8.0),
+                    child: Text(
+                      'My Tasks',
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    child: Container(
+                      height: 200,
+                      decoration: BoxDecoration(
+                        color: colors().taskBackground,
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      child: StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('Tasks')
+                            .where('Assigned Users', arrayContainsAny: [userData.username, 'Team'])
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) {
+                            return Center(child: CircularProgressIndicator());
+                          }
+                          final tasks = snapshot.data!.docs;
+                          return ListView.builder(
+                            padding: EdgeInsets.all(8.0),
+                            itemCount: tasks.length,
+                            itemBuilder: (context, index) {
+                              var task = tasks[index].data() as Map<String, dynamic>;
+                              return Container(
+                                margin: EdgeInsets.symmetric(vertical: 4.0),
+                                padding: EdgeInsets.all(8.0),
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.black),
+                                  borderRadius: BorderRadius.circular(4.0),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        '${task['Task']} - ${task['UrgencyLevel']}',
+                                        style: TextStyle(color: Colors.black),
+                                      ),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () => _deleteTask(tasks[index].id),
+                                      style: ButtonStyle(
+                                        backgroundColor: WidgetStateProperty.all(colors().completedRed),
+                                      ),
+                                      child: Text(
+                                        'Completed',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             Positioned(
