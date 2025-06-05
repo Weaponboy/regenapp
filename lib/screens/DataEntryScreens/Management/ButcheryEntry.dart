@@ -10,6 +10,7 @@ class ButcheryEntry extends StatefulWidget {
 }
 
 class ButcheryEntryState extends State<ButcheryEntry> {
+  
   final TextEditingController dateController =
   TextEditingController(text: DateFormat('yyyy-MM-dd').format(DateTime.now()));
   final _firestore = FirebaseFirestore.instance;
@@ -107,9 +108,8 @@ class ButcheryEntryState extends State<ButcheryEntry> {
       }
 
       setState(() {
-        _selectedItem = null;
         dateController.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
-        _cutControllers.forEach((_, controller) => controller.clear());
+        // _cutControllers.forEach((_, controller) => controller.clear());
       });
     }
   }

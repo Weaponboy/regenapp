@@ -24,7 +24,7 @@ class HomeScreen extends StatelessWidget {
         destinationPage = AnimalDataEntry();
         break;
       case '2':
-        destinationPage = ManagementDataEntry();
+        destinationPage = ManagementDataEntry(userData: userData);
         break;
       case '3':
         destinationPage = Customize();
@@ -129,26 +129,108 @@ class HomeScreen extends StatelessWidget {
                                   border: Border.all(color: Colors.black),
                                   borderRadius: BorderRadius.circular(4.0),
                                 ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        '${task['Task']} - ${task['UrgencyLevel']}',
-                                        style: TextStyle(color: Colors.black),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return Dialog(
+                                          backgroundColor: Colors.transparent, // Transparent to show image
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(15),
+                                          ),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              image: DecorationImage(
+                                                image: AssetImage('assets/wheat.jpeg'), // Background image
+                                                fit: BoxFit.cover,
+                                                colorFilter: ColorFilter.mode(
+                                                  Colors.black.withOpacity(0.5), // Darken for readability
+                                                  BlendMode.darken,
+                                                ),
+                                              ),
+                                              borderRadius: BorderRadius.circular(15),
+                                            ),
+                                            padding: EdgeInsets.all(24), // Increased padding for better spacing
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              crossAxisAlignment: CrossAxisAlignment.start, // Align text to the left
+                                              children: [
+                                                Text(
+                                                  '${task['Task']}',
+                                                  style: TextStyle(
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.white,
+                                                    shadows: [
+                                                      Shadow(
+                                                        blurRadius: 4,
+                                                        color: Colors.black87,
+                                                        offset: Offset(1, 1),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                SizedBox(height: 16),
+                                                Text(
+                                                  'Urgency: ${task['UrgencyLevel']}\nCreated by: ${task['Created by']}\nDate created: ${task['Date']}',
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    color: Colors.white,
+                                                    shadows: [
+                                                      Shadow(
+                                                        blurRadius: 4,
+                                                        color: Colors.black87,
+                                                        offset: Offset(1, 1),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                SizedBox(height: 16),
+                                                Row(
+                                                  mainAxisAlignment: MainAxisAlignment.end,
+                                                  children: [
+                                                    TextButton(
+                                                      onPressed: () => Navigator.pop(context),
+                                                      child: Text(
+                                                        'Close',
+                                                        style: TextStyle(
+                                                          fontSize: 16,
+                                                          color: Colors.white,
+                                                          fontWeight: FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  },
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          '${task['Task']} - ${task['UrgencyLevel']}',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
                                       ),
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: () => _deleteTask(tasks[index].id),
-                                      style: ButtonStyle(
-                                        backgroundColor: WidgetStateProperty.all(colors().completedRed),
+                                      ElevatedButton(
+                                        onPressed: () => _deleteTask(tasks[index].id),
+                                        style: ButtonStyle(
+                                          backgroundColor: WidgetStateProperty.all(colors().completedRed),
+                                        ),
+                                        child: Text(
+                                          'Completed',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
                                       ),
-                                      child: Text(
-                                        'Completed',
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               );
                             },

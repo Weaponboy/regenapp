@@ -14,7 +14,21 @@ class EggsEntrStatey extends State<EggsEntry> {
   final TextEditingController mortalityController = TextEditingController();
   final TextEditingController sacksUsedController = TextEditingController();
   final TextEditingController notesController = TextEditingController();
-  final TextEditingController dateController = TextEditingController(text: DateFormat('yyyy-MM-dd').format(DateTime.now()));
+  DateTime? _selectedDate;
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
 
   bool AppleCiderVinegar = false;
   bool Calcium = false;
@@ -24,147 +38,165 @@ class EggsEntrStatey extends State<EggsEntry> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(height: 120),
 
-            Text(
-              'Chicken Data',
-              style: TextStyle(fontSize: 30, color: Colors.black),
-            ),
+              Text(
+                'Chicken Data',
+                style: TextStyle(fontSize: 30, color: Colors.black),
+              ),
 
-            SizedBox(height: 20),
+              SizedBox(height: 20),
 
-            TextField(
-              controller: eggCountController,
-              decoration: InputDecoration(labelText: 'Number of eggs collected'),
-              keyboardType: TextInputType.number,
-              onChanged: (value) {
-                if (value.isNotEmpty && double.tryParse(value) == null) {
-                  eggCountController.text = value.substring(0, value.length - 1);
-                }
-              },
-            ),
+              TextField(
+                controller: eggCountController,
+                decoration: InputDecoration(labelText: 'Number of eggs collected'),
+                keyboardType: TextInputType.number,
+                onChanged: (value) {
+                  if (value.isNotEmpty && double.tryParse(value) == null) {
+                    eggCountController.text = value.substring(0, value.length - 1);
+                  }
+                },
+              ),
 
-            SizedBox(height: 20),
+              SizedBox(height: 20),
 
-            TextField(
-              controller: mortalityController,
-              decoration: InputDecoration(labelText: 'Mortality?'),
-            ),
+              TextField(
+                controller: mortalityController,
+                decoration: InputDecoration(labelText: 'Mortality?'),
+              ),
 
-            SizedBox(height: 20),
+              SizedBox(height: 20),
 
-            TextField(
-              controller: sacksUsedController,
-              decoration: InputDecoration(labelText: 'Food sacks used'),
-              keyboardType: TextInputType.number,
-              onChanged: (value) {
-                if (value.isNotEmpty && double.tryParse(value) == null) {
-                  sacksUsedController.text = value.substring(0, value.length - 1);
-                }
-              },
-            ),
+              TextField(
+                controller: sacksUsedController,
+                decoration: InputDecoration(labelText: 'Food sacks used'),
+                keyboardType: TextInputType.number,
+                onChanged: (value) {
+                  if (value.isNotEmpty && double.tryParse(value) == null) {
+                    sacksUsedController.text = value.substring(0, value.length - 1);
+                  }
+                },
+              ),
 
-            SizedBox(height: 20),
+              SizedBox(height: 20),
 
-            TextField(
-              controller: dateController,
-              decoration: InputDecoration(labelText: 'Date'),
-              keyboardType: TextInputType.datetime,
-              onChanged: (value) {
-                if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(value)) {
-                  dateController.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
-                }
-              },
-            ),
+              Row(
+                children: [
+                  Checkbox(
+                    value: AppleCiderVinegar,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        AppleCiderVinegar = value ?? false;
+                      });
+                    },
+                  ),
+                  Text('Apple Cider Vinegar'),
+                  Checkbox(
+                    value: Calcium,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        Calcium = value ?? false;
+                      });
+                    },
+                  ),
+                  Text('Calcium'),
+                ],
+              ),
 
-            SizedBox(height: 20),
+              Row(
+                children: [
+                  Checkbox(
+                    value: Grit,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        Grit = value ?? false;
+                      });
+                    },
+                  ),
+                  Text('Grit'),
+                  Checkbox(
+                    value: Aloe,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        Aloe = value ?? false;
+                      });
+                    },
+                  ),
+                  Text('Aloe'),
+                ],
+              ),
 
-            Row(
-              children: [
-                Checkbox(
-                  value: AppleCiderVinegar,
-                  onChanged: (bool? value) {
-                    setState(() {
-                      AppleCiderVinegar = value ?? false;
+              SizedBox(height: 20),
+
+              TextField(
+                controller: notesController,
+                decoration: InputDecoration(labelText: 'Notes/things to add'),
+              ),
+
+              SizedBox(height: 20),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _selectedDate == null
+                          ? "Select a date"
+                          : DateFormat('yyyy-MM-dd').format(_selectedDate!),
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => _selectDate(context),
+                    child: Text("Pick Date"),
+                  ),
+                ],
+              ),
+
+              SizedBox(height: 20),
+
+              ElevatedButton(
+                onPressed: () {
+
+                  if (eggCountController.text.isNotEmpty) {
+
+                    String date = DateFormat('yyyy-MM-dd').format(_selectedDate!);
+
+                    FirebaseFirestore.instance.collection('ChickenData').add({
+                      'Number of eggs': int.parse(eggCountController.text),
+                      'Mortality?': mortalityController.text,
+                      'Sacks used': sacksUsedController.text,
+                      'Date': date,
+                      'Notes': notesController.text,
+                      'Calcium': Calcium,
+                      'Grit': Grit,
+                      'Aloe': Aloe,
+                      'AppleCiderVinegar': AppleCiderVinegar,
                     });
-                  },
-                ),
-                Text('Apple Cider Vinegar'),
-                Checkbox(
-                  value: Calcium,
-                  onChanged: (bool? value) {
+
                     setState(() {
-                      Calcium = value ?? false;
+                      eggCountController.clear();
+                      mortalityController.clear();
+                      sacksUsedController.clear();
+                      notesController.clear();
+                      _selectedDate = DateTime.now();
+                      date = DateFormat('yyyy-MM-dd').format(_selectedDate!);
+                      Calcium = false;
+                      Grit = false;
+                      Aloe = false;
+                      AppleCiderVinegar = false;
                     });
-                  },
-                ),
-                Text('Calcium'),
-                Checkbox(
-                  value: Grit,
-                  onChanged: (bool? value) {
-                    setState(() {
-                      Grit = value ?? false;
-                    });
-                  },
-                ),
-                Text('Grit'),
-                Checkbox(
-                  value: Aloe,
-                  onChanged: (bool? value) {
-                    setState(() {
-                      Aloe = value ?? false;
-                    });
-                  },
-                ),
-                Text('Aloe'),
-              ],
-            ),
-
-            SizedBox(height: 20),
-
-            TextField(
-              controller: notesController,
-              decoration: InputDecoration(labelText: 'Notes/things to add'),
-            ),
-
-            SizedBox(height: 20),
-
-            ElevatedButton(
-              onPressed: () {
-                if (eggCountController.text.isNotEmpty) {
-                  FirebaseFirestore.instance.collection('ChickenData').add({
-                    'Number of eggs': int.parse(eggCountController.text),
-                    'Mortality?': mortalityController.text,
-                    'Sacks used': sacksUsedController.text,
-                    'Date': dateController.text,
-                    'Notes': notesController.text,
-                    'Calcium': Calcium,
-                    'Grit': Grit,
-                    'Aloe': Aloe,
-                    'AppleCiderVinegar': AppleCiderVinegar,
-
-                  });
-                  setState(() {
-                    eggCountController.clear();
-                    mortalityController.clear();
-                    sacksUsedController.clear();
-                    notesController.clear();
-                    dateController.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
-                    Calcium = false;
-                    Grit = false;
-                    Aloe = false;
-                    AppleCiderVinegar = false;
-                  });
-
-                }
-              },
-              child: Text('Submit'),
-            ),
-          ],
+                  }
+                },
+                child: Text('Submit'),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -7,4 +7,6 @@ class colors {
 
   Color taskBackground = Color.fromRGBO(39, 110, 56, 0.4);
 
+  Color taskInfoBackground = Color.fromRGBO(39, 110, 56, 1);
+
 }

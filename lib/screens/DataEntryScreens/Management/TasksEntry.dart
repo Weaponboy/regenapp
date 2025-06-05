@@ -2,10 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
+import 'package:regendataapp/LoginCode/CurrentUserData.dart';
 
 class TasksEntry extends StatefulWidget {
+
+  final currentUserData userData;
+  TasksEntry({required this.userData});
+
   @override
-  TasksEntryState createState() => TasksEntryState();
+  TasksEntryState createState() => TasksEntryState(userData: userData);
 }
 
 class TasksEntryState extends State<TasksEntry> {
@@ -17,6 +22,9 @@ class TasksEntryState extends State<TasksEntry> {
   String? urgency;
   List<String> urgencyLevel = ["High", "Medium", "Low"];
   final _multiSelectKey = GlobalKey<FormFieldState>(); // Keep for potential form validation
+
+  final currentUserData userData;
+  TasksEntryState({required this.userData});
 
   @override
   void initState() {
@@ -112,6 +120,7 @@ class TasksEntryState extends State<TasksEntry> {
                   'Task': TaskController.text,
                   'UrgencyLevel': urgency,
                   'Assigned Users': _selectedUsers,
+                  'Created by': userData.username,
                   'Date': dateController.text,
                 });
                 setState(() {

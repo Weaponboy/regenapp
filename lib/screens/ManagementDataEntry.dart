@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:regendataapp/Colors.dart';
+import 'package:regendataapp/LoginCode/CurrentUserData.dart';
 import 'package:regendataapp/screens/DataEntryScreens/Management/ButcheryEntry.dart';
 import 'package:regendataapp/screens/DataEntryScreens/Management/FinanceEntry.dart';
 import 'package:regendataapp/screens/DataEntryScreens/Management/ProjectEntry.dart';
@@ -19,6 +20,9 @@ class ManagementDataEntry extends StatelessWidget {
     {'id': '6', 'title': 'Finances'},
   ];
 
+  final currentUserData userData;
+  ManagementDataEntry({required this.userData});
+
   void _navigateToPage(BuildContext context, String id) {
     Widget destinationPage;
     switch (id) {
@@ -32,7 +36,7 @@ class ManagementDataEntry extends StatelessWidget {
         destinationPage = SlaughterEntry();
         break;
       case '4':
-        destinationPage = TasksEntry();
+        destinationPage = TasksEntry(userData: userData);
         break;
       case '5':
         destinationPage = ButcheryEntry();
@@ -41,7 +45,7 @@ class ManagementDataEntry extends StatelessWidget {
         destinationPage = FinanceEntry();
         break;
       default:
-        destinationPage = ManagementDataEntry();
+        destinationPage = ManagementDataEntry(userData: userData);
     }
     Navigator.push(
       context,
@@ -61,7 +65,7 @@ class ManagementDataEntry extends StatelessWidget {
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/wheat.jpeg'),
+            image: AssetImage('assets/benpicture.jpg'),
             fit: BoxFit.cover,
           ),
         ),
@@ -77,7 +81,7 @@ class ManagementDataEntry extends StatelessWidget {
                   'Data entry',
                   style: TextStyle(
                     fontSize: 60,
-                    fontFamily: 'Roboto', // Ensure Roboto is in pubspec.yaml
+                    fontFamily: 'Roboto',
                     shadows: [
                       Shadow(
                         blurRadius: 10.0,

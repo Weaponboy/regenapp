@@ -7,18 +7,6 @@ import 'package:regendataapp/screens/home.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-FlutterLocalNotificationsPlugin();
-
-Future<void> initNotifications() async {
-  const AndroidInitializationSettings androidSettings =
-  AndroidInitializationSettings('app_icon');
-  const InitializationSettings initSettings =
-  InitializationSettings(android: androidSettings);
-  await flutterLocalNotificationsPlugin.initialize(initSettings);
-}
 
 Future<void> main() async {
 
@@ -27,7 +15,6 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  await initNotifications();
 
   runApp(MyApp());
 }

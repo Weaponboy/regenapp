@@ -50,6 +50,7 @@ class _MultiCollectionDateSearchScreenState extends State<MultiCollectionDateSea
               ],
             ),
           ),
+
           Expanded(
             child: _selectedDate == null
                 ? Center(child: Text("Please select a date"))

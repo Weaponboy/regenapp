@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:regendataapp/Colors.dart';
 import 'package:regendataapp/screens/CustomizeScreens/Fields.dart';
-import 'package:regendataapp/screens/CustomizeScreens/FullDayData.dart';
+import 'package:regendataapp/screens/DataScreens/FullDayData.dart';
 import 'package:regendataapp/screens/CustomizeScreens/MeatCuts.dart';
-import 'package:regendataapp/screens/DataEntryScreens/Soil_and_Carbon/Frost.dart';
-import 'package:regendataapp/screens/DataEntryScreens/Soil_and_Carbon/Rain.dart';
 import 'package:regendataapp/screens/DataEntryScreens/Soil_and_Carbon/Snow.dart';
 import 'dart:math';
 
 import 'package:regendataapp/screens/DataEntryScreens/Soil_and_Carbon/SoilCarbon.dart';
+import 'package:regendataapp/screens/DataScreens/eggGraphing.dart';
 
 class Customize extends StatelessWidget {
 
@@ -26,7 +25,7 @@ class Customize extends StatelessWidget {
         destinationPage = MeatCutsScreen();
         break;
       case '2':
-        destinationPage = Snow();
+        destinationPage = EggGraphing();
         break;
       case '3':
         destinationPage = Fields();
