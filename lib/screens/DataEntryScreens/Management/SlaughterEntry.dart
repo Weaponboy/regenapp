@@ -59,7 +59,9 @@ class SlaughterEntryState extends State<SlaughterEntry> {
                 );
               }).toList(),
               onChanged: (String? newValue) {
-                animal = newValue;
+                setState(() {
+                  animal = newValue;
+                });
               },
             ),
 

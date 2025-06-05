@@ -5,18 +5,29 @@ import 'package:regendataapp/LoginCode/CurrentUserData.dart';
 import 'package:regendataapp/LoginCode/screens/login.dart';
 import 'package:regendataapp/screens/home.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'firebase_options.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-// Import the generated firebase_options.dart file
-import 'firebase_options.dart'; // This file will be generated after setup
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+FlutterLocalNotificationsPlugin();
+
+Future<void> initNotifications() async {
+  const AndroidInitializationSettings androidSettings =
+  AndroidInitializationSettings('app_icon');
+  const InitializationSettings initSettings =
+  InitializationSettings(android: androidSettings);
+  await flutterLocalNotificationsPlugin.initialize(initSettings);
+}
 
 Future<void> main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase with platform-specific options
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await initNotifications();
 
   runApp(MyApp());
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:regendataapp/Colors.dart';
+import 'package:regendataapp/screens/CustomizeScreens/Fields.dart';
+import 'package:regendataapp/screens/CustomizeScreens/FullDayData.dart';
 import 'package:regendataapp/screens/CustomizeScreens/MeatCuts.dart';
 import 'package:regendataapp/screens/DataEntryScreens/Soil_and_Carbon/Frost.dart';
 import 'package:regendataapp/screens/DataEntryScreens/Soil_and_Carbon/Rain.dart';
@@ -27,10 +29,10 @@ class Customize extends StatelessWidget {
         destinationPage = Snow();
         break;
       case '3':
-        destinationPage = Frost();
+        destinationPage = Fields();
         break;
       case '4':
-        destinationPage = SoilCarbon();
+        destinationPage = MultiCollectionDateSearchScreen();
         break;
       default:
         destinationPage = Customize();
