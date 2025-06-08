@@ -12,15 +12,27 @@ class _DairyEntryState extends State<DairyEntry> {
   final TextEditingController milkController = TextEditingController();
   final TextEditingController cowsController = TextEditingController();
   final TextEditingController notesController = TextEditingController();
-  final TextEditingController feedSupController = TextEditingController();
 
-  final TextEditingController dateController =
-  TextEditingController(text: DateFormat('yyyy-MM-dd').format(DateTime.now()));
+  DateTime? _selectedDate = DateTime.now();
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
   String? _selectedItem;
   List<String> _items = [];
 
-  String? manHours;
-  List<String> timeIncrements = ["10min", "20min", "30min", "40min", "50min", "60min"];
+  final TextEditingController manHours = TextEditingController();
 
   @override
   void initState() {
@@ -47,9 +59,38 @@ class _DairyEntryState extends State<DairyEntry> {
             children: [
               SizedBox(height: 90),
 
-              Text(
-                'Dairy Cow Data',
-                style: TextStyle(fontSize: 30, color: Colors.black),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Text(
+                    'Dairy Data',
+                    style: TextStyle(fontSize: 30, color: Colors.black),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      String date = DateFormat('yyyy-MM-dd').format(_selectedDate!);
+
+                      if (milkController.text.isNotEmpty) {
+                        FirebaseFirestore.instance.collection('DairyData').add({
+                          'Amount of milk': double.parse(milkController.text),
+                          'Cows milked': cowsController.text,
+                          'Location of the cows': _selectedItem,
+                          'Notes': notesController.text,
+                          'Date': date,
+                        });
+                        setState(() {
+                          milkController.clear();
+                          cowsController.clear();
+                          notesController.clear();
+                          _selectedItem = null;
+                          _selectedDate = DateTime.now();
+                          date = DateFormat('yyyy-MM-dd').format(_selectedDate!);
+                        });
+                      }
+                    },
+                    child: Text('Submit'),
+                  ),
+                ],
               ),
 
               SizedBox(height: 20),
@@ -94,80 +135,110 @@ class _DairyEntryState extends State<DairyEntry> {
               SizedBox(height: 20),
 
               TextField(
-                controller: feedSupController,
-                decoration: InputDecoration(labelText: 'Feed supplements'),
-              ),
-
-              SizedBox(height: 20),
-
-              DropdownButton<String>(
-                isExpanded: true,
-                value: manHours,
-                hint: Text('Time spent milking'),
-                items: timeIncrements.map((String item) {
-                  return DropdownMenuItem<String>(
-                    value: item,
-                    child: Text(item),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    manHours = newValue;
-                  });
-                },
-              ),
-
-              SizedBox(height: 20),
-
-              TextField(
                 controller: notesController,
                 decoration: InputDecoration(labelText: 'Notes/things to add'),
               ),
 
+              SizedBox(height: 30),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Text(
+                    'Dairy Man Hours',
+                    style: TextStyle(fontSize: 30, color: Colors.black),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      String date = DateFormat('yyyy-MM-dd').format(_selectedDate!);
+
+                      if (manHours.text.isNotEmpty) {
+                        FirebaseFirestore.instance.collection('ManHours').add({
+                          'Enterprise': 'Dairy',
+                          'ManHours': manHours.text,
+                          'Date': date,
+                        });
+                        setState(() {
+                          manHours.clear();
+                          _selectedDate = DateTime.now();
+                          date = DateFormat('yyyy-MM-dd').format(_selectedDate!);
+                        });
+                      }
+                    },
+                    child: Text('Submit'),
+                  ),
+                ],
+              ),
+
               SizedBox(height: 20),
 
               TextField(
-                controller: dateController,
-                decoration: InputDecoration(labelText: 'Date'),
-                keyboardType: TextInputType.datetime,
-                onChanged: (value) {
-                  if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(value)) {
-                    dateController.text =
-                        DateFormat('yyyy-MM-dd').format(DateTime.now());
-                  }
-                },
+                controller: manHours,
+                decoration: InputDecoration(labelText: 'Man hours (mins)'),
+              ),
+
+              SizedBox(height: 20),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _selectedDate == null
+                          ? "Select a date"
+                          : DateFormat('yyyy-MM-dd').format(_selectedDate!),
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => _selectDate(context),
+                    child: Text("Pick Date"),
+                  ),
+                ],
               ),
 
               SizedBox(height: 20),
 
               ElevatedButton(
                 onPressed: () {
-                  if (milkController.text.isNotEmpty &&
-                      cowsController.text.isNotEmpty &&
-                      _selectedItem != null) {
+                  String date = DateFormat('yyyy-MM-dd').format(_selectedDate!);
+
+                  if (milkController.text.isNotEmpty) {
                     FirebaseFirestore.instance.collection('DairyData').add({
                       'Amount of milk': double.parse(milkController.text),
                       'Cows milked': cowsController.text,
                       'Location of the cows': _selectedItem,
-                      'Feed supplements': feedSupController.text,
-                      'Time spent milking': manHours,
                       'Notes': notesController.text,
-                      'Date': dateController.text,
+                      'Date': date,
                     });
                     setState(() {
                       milkController.clear();
                       cowsController.clear();
                       notesController.clear();
-                      feedSupController.clear();
                       _selectedItem = null;
-                      manHours = null;
-                      dateController.text =
-                          DateFormat('yyyy-MM-dd').format(DateTime.now());
+                    });
+                  }
+
+                  if (manHours.text.isNotEmpty) {
+                    FirebaseFirestore.instance.collection('ManHours').add({
+                      'Enterprise': 'Dairy',
+                      'ManHours': manHours.text,
+                      'Date': date,
+                    });
+                    setState(() {
+                      manHours.clear();
+                    });
+                  }
+
+                  if (manHours.text.isNotEmpty || milkController.text.isNotEmpty) {
+                    setState(() {
+                      _selectedDate = DateTime.now();
+                      date = DateFormat('yyyy-MM-dd').format(_selectedDate!);
                     });
                   }
                 },
-                child: Text('Submit'),
+                child: Text('Submit All'),
               ),
+
             ],
           ),
         ),

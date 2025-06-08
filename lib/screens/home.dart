@@ -3,13 +3,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:regendataapp/Colors.dart';
 import 'package:regendataapp/LoginCode/CurrentUserData.dart';
-import 'package:regendataapp/screens/AnimalDataEntry.dart';
-import 'package:regendataapp/screens/Customize.dart';
-import 'package:regendataapp/screens/ManagementDataEntry.dart';
+import 'package:regendataapp/screens/SubHomes/AnimalDataEntry.dart';
+import 'package:regendataapp/screens/SubHomes/Customize.dart';
+import 'package:regendataapp/screens/SubHomes/ManagementDataEntry.dart';
 
 class HomeScreen extends StatelessWidget {
   final List<Map<String, dynamic>> cardData = [
-    {'id': '1', 'title': 'Animals'},
+    {'id': '1', 'title': 'Enterprises'},
     {'id': '2', 'title': 'Management'},
     {'id': '3', 'title': 'Customize'},
   ];
@@ -21,7 +21,7 @@ class HomeScreen extends StatelessWidget {
     Widget destinationPage;
     switch (id) {
       case '1':
-        destinationPage = AnimalDataEntry();
+        destinationPage = Enterprises();
         break;
       case '2':
         destinationPage = ManagementDataEntry(userData: userData);
@@ -173,7 +173,7 @@ class HomeScreen extends StatelessWidget {
                                                 ),
                                                 SizedBox(height: 16),
                                                 Text(
-                                                  'Urgency: ${task['UrgencyLevel']}\nCreated by: ${task['Created by']}\nDate created: ${task['Date']}',
+                                                  'Urgency: ${task['UrgencyLevel']}\nCreated by: ${task['Created by']}\nDate created: ${task['Date']}\nAssigned users: ${task['Assigned Users']}',
                                                   style: TextStyle(
                                                     fontSize: 16,
                                                     color: Colors.white,

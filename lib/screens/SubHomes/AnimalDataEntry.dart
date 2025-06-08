@@ -11,7 +11,7 @@ import 'package:regendataapp/screens/DataEntryScreens/Management/SlaughterEntry.
 import 'package:regendataapp/screens/DataEntryScreens/Management/TasksEntry.dart';
 import 'dart:math';
 
-class AnimalDataEntry extends StatelessWidget {
+class Enterprises extends StatelessWidget {
 
   final List<Map<String, dynamic>> cardData = [
     {'id': '1', 'title': 'Dairy cows'},
@@ -48,7 +48,7 @@ class AnimalDataEntry extends StatelessWidget {
         destinationPage = HomeFlockEntry();
         break;
       default:
-        destinationPage = AnimalDataEntry();
+        destinationPage = Enterprises();
     }
     Navigator.push(
       context,
@@ -76,12 +76,12 @@ class AnimalDataEntry extends StatelessWidget {
           children: [
             // Title
             Positioned(
-              top: 80,
+              top: 120,
               left: 0,
               right: 0,
               child: Center(
                 child: Text(
-                  'Data entry',
+                  'Enterprises',
                   style: TextStyle(
                     fontSize: 60,
                     fontFamily: 'Roboto', // Ensure Roboto is in pubspec.yaml

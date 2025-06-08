@@ -1,51 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:regendataapp/Colors.dart';
-import 'package:regendataapp/LoginCode/CurrentUserData.dart';
-import 'package:regendataapp/screens/DataEntryScreens/Management/ButcheryEntry.dart';
-import 'package:regendataapp/screens/DataEntryScreens/Management/FinanceEntry.dart';
-import 'package:regendataapp/screens/DataEntryScreens/Management/ProjectEntry.dart';
-import 'package:regendataapp/screens/DataEntryScreens/Management/SlaughterEntry.dart';
-import 'package:regendataapp/screens/DataEntryScreens/Management/SoilAndClimate.dart';
-import 'package:regendataapp/screens/DataEntryScreens/Management/TasksEntry.dart';
+import 'package:regendataapp/screens/CustomizeScreens/CashCategories.dart';
+import 'package:regendataapp/screens/CustomizeScreens/Customers.dart';
+import 'package:regendataapp/screens/CustomizeScreens/Fields.dart';
+import 'package:regendataapp/screens/DataScreens/FullDayData.dart';
+import 'package:regendataapp/screens/CustomizeScreens/MeatCuts.dart';
 import 'dart:math';
+import 'package:regendataapp/screens/DataScreens/eggGraphing.dart';
 
-class ManagementDataEntry extends StatelessWidget {
+class Customize extends StatelessWidget {
 
   final List<Map<String, dynamic>> cardData = [
-    {'id': '1', 'title': 'Projects'},
-    {'id': '2', 'title': 'Soil and climate'},
-    {'id': '3', 'title': 'Slaughter'},
-    {'id': '4', 'title': 'Tasks'},
-    {'id': '5', 'title': 'Butchery'},
-    {'id': '6', 'title': 'Finances'},
+    {'id': '1', 'title': 'Meat cuts'},
+    {'id': '2', 'title': 'Users'},
+    {'id': '3', 'title': 'Fields'},
+    {'id': '4', 'title': 'Cash categories'},
+    {'id': '5', 'title': 'Customers'},
   ];
-
-  final currentUserData userData;
-  ManagementDataEntry({required this.userData});
 
   void _navigateToPage(BuildContext context, String id) {
     Widget destinationPage;
     switch (id) {
       case '1':
-        destinationPage = ProjectEntry();
+        destinationPage = MeatCutsScreen();
         break;
       case '2':
-        destinationPage = SoilAndClimate();
+        destinationPage = EggGraphing();
         break;
       case '3':
-        destinationPage = SlaughterEntry();
+        destinationPage = Fields();
         break;
       case '4':
-        destinationPage = TasksEntry(userData: userData);
+        destinationPage = CashCategories();
         break;
       case '5':
-        destinationPage = ButcheryEntry();
-        break;
-      case '6':
-        destinationPage = FinanceEntry();
+        destinationPage = Customers();
         break;
       default:
-        destinationPage = ManagementDataEntry(userData: userData);
+        destinationPage = Customize();
     }
     Navigator.push(
       context,
@@ -65,7 +57,7 @@ class ManagementDataEntry extends StatelessWidget {
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/benpicture.jpg'),
+            image: AssetImage('assets/wheat.jpeg'),
             fit: BoxFit.cover,
           ),
         ),
@@ -73,15 +65,15 @@ class ManagementDataEntry extends StatelessWidget {
           children: [
             // Title
             Positioned(
-              top: 80,
+              top: 120,
               left: 0,
               right: 0,
               child: Center(
                 child: Text(
-                  'Data entry',
+                  'Customize',
                   style: TextStyle(
                     fontSize: 60,
-                    fontFamily: 'Roboto',
+                    fontFamily: 'Roboto', // Ensure Roboto is in pubspec.yaml
                     shadows: [
                       Shadow(
                         blurRadius: 10.0,
@@ -98,7 +90,7 @@ class ManagementDataEntry extends StatelessWidget {
             ...List.generate(cardData.length, (index) {
               final angle = 2 * pi * index / cardData.length;
               final x = (centerX + radius * cos(angle) - circleSize / 2);
-              final y = (centerY + radius * sin(angle) - circleSize / 2) + 60;
+              final y = (centerY + radius * sin(angle) - circleSize / 2) + 40;
 
               return Positioned(
                 left: x,

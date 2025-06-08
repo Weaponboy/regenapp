@@ -10,12 +10,28 @@ class FinanceEntry extends StatefulWidget {
 
 class FinanceEntryState extends State<FinanceEntry> {
   final TextEditingController amountController = TextEditingController();
-  final TextEditingController personController = TextEditingController();
-  final TextEditingController whatController = TextEditingController();
+  final TextEditingController DescriptionController = TextEditingController();
   final TextEditingController dateController = TextEditingController(text: DateFormat('yyyy-MM-dd').format(DateTime.now()));
 
   String? cash;
   List<String> options = ["In", "Out"];
+
+  String? _selectedItem;
+  List<String> _items = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchLocations();
+  }
+
+  Future<void> _fetchLocations() async {
+    QuerySnapshot snapshot =
+    await FirebaseFirestore.instance.collection('CashCategories').get();
+    setState(() {
+      _items = snapshot.docs.map((doc) => doc['category'] as String).toList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,16 +74,28 @@ class FinanceEntryState extends State<FinanceEntry> {
 
             SizedBox(height: 20),
 
-            TextField(
-              controller: personController,
-              decoration: InputDecoration(labelText: 'What was it for?'),
+            DropdownButton<String>(
+              isExpanded: true,
+              value: _selectedItem,
+              hint: Text('Select category'),
+              items: _items.map((String item) {
+                return DropdownMenuItem<String>(
+                  value: item,
+                  child: Text(item),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedItem = newValue;
+                });
+              },
             ),
 
             SizedBox(height: 20),
 
             TextField(
-              controller: whatController,
-              decoration: InputDecoration(labelText: 'Why?'),
+              controller: DescriptionController,
+              decoration: InputDecoration(labelText: 'Description?'),
             ),
 
             SizedBox(height: 20),
@@ -91,15 +119,15 @@ class FinanceEntryState extends State<FinanceEntry> {
                 FirebaseFirestore.instance.collection('Cash').add({
                   'Amount': amountController.text,
                   'In or Out': cash,
-                  'What for': personController.text,
-                  'Why': whatController.text,
+                  'Category': _selectedItem,
+                  'Description': DescriptionController.text,
                   'Date': dateController.text,
                 });
                 setState(() {
                   cash = null;
                   amountController.clear();
-                  personController.clear();
-                  whatController.clear();
+                  _selectedItem = null;
+                  DescriptionController.clear();
                   dateController.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
                 });
               },

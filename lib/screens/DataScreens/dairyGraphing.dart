@@ -3,12 +3,12 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class EggGraphing extends StatefulWidget {
+class DairyGraphing extends StatefulWidget {
   @override
-  _EggGraphingState createState() => _EggGraphingState();
+  DairyGraphingState createState() => DairyGraphingState();
 }
 
-class _EggGraphingState extends State<EggGraphing> {
+class DairyGraphingState extends State<DairyGraphing> {
   String? _selectedMonth;
   List<String> _availableMonths = [];
   int _touchedIndex = -1;
@@ -21,7 +21,7 @@ class _EggGraphingState extends State<EggGraphing> {
 
   // Fetch available months from Firestore
   void _loadAvailableMonths() async {
-    final snapshot = await FirebaseFirestore.instance.collection('ChickenData').orderBy('Date').get();
+    final snapshot = await FirebaseFirestore.instance.collection('DairyData').orderBy('Date').get();
     final months = snapshot.docs
         .map((doc) {
       final data = doc.data() as Map<String, dynamic>;
@@ -43,7 +43,7 @@ class _EggGraphingState extends State<EggGraphing> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Egg Production'),
+        title: Text('Dairy Production'),
         actions: [
           Container(
             width: 120,
@@ -75,7 +75,7 @@ class _EggGraphingState extends State<EggGraphing> {
         ],
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('ChickenData').orderBy('Date').snapshots(),
+        stream: FirebaseFirestore.instance.collection('DairyData').orderBy('Date').snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
@@ -98,7 +98,7 @@ class _EggGraphingState extends State<EggGraphing> {
 
           for (int i = 0; i < docs.length; i++) {
             final data = docs[i].data() as Map<String, dynamic>;
-            final eggCount = (data['Number of eggs'] as num?)?.toDouble() ?? 0.0;
+            final eggCount = (data['Amount of milk'] as num?)?.toDouble() ?? 0.0;
             spots.add(FlSpot(i.toDouble(), eggCount));
             final date = (data['Date'] is Timestamp)
                 ? (data['Date'] as Timestamp).toDate()
@@ -158,14 +158,8 @@ class _EggGraphingState extends State<EggGraphing> {
                         return touchedSpots.map((spot) {
                           final index = spot.x.toInt();
                           final data = docs[index].data() as Map<String, dynamic>;
-                          final trueBooleans = <String>[];
-                          if (data['Calcium'] == true) trueBooleans.add('Calcium');
-                          if (data['Grit'] == true) trueBooleans.add('Grit');
-                          if (data['Aloe'] == true) trueBooleans.add('Aloe');
-                          if (data['AppleCiderVinegar'] == true) trueBooleans.add('AC');
-                          final booleanText = trueBooleans.isNotEmpty ? trueBooleans.join(', ') : 'None';
                           return LineTooltipItem(
-                            '$booleanText',
+                            data['Amount of milk'].toString(),
                             TextStyle(
                                 color: Colors.white,
                                 fontSize: 10,

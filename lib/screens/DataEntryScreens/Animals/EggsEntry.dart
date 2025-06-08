@@ -14,7 +14,8 @@ class EggsEntrStatey extends State<EggsEntry> {
   final TextEditingController mortalityController = TextEditingController();
   final TextEditingController sacksUsedController = TextEditingController();
   final TextEditingController notesController = TextEditingController();
-  DateTime? _selectedDate;
+  final TextEditingController manHours = TextEditingController();
+  DateTime? _selectedDate = DateTime.now();
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -160,13 +161,26 @@ class EggsEntrStatey extends State<EggsEntry> {
 
               SizedBox(height: 20),
 
+              Text(
+                'Eggs Man Hours',
+                style: TextStyle(fontSize: 30, color: Colors.black),
+              ),
+
+              SizedBox(height: 20),
+
+              TextField(
+                controller: manHours,
+                decoration: InputDecoration(labelText: 'Man hours (mins)'),
+              ),
+
+              SizedBox(height: 20),
+
               ElevatedButton(
                 onPressed: () {
 
+                  String date = DateFormat('yyyy-MM-dd').format(_selectedDate!);
+
                   if (eggCountController.text.isNotEmpty) {
-
-                    String date = DateFormat('yyyy-MM-dd').format(_selectedDate!);
-
                     FirebaseFirestore.instance.collection('ChickenData').add({
                       'Number of eggs': int.parse(eggCountController.text),
                       'Mortality?': mortalityController.text,
@@ -184,14 +198,28 @@ class EggsEntrStatey extends State<EggsEntry> {
                       mortalityController.clear();
                       sacksUsedController.clear();
                       notesController.clear();
-                      _selectedDate = DateTime.now();
-                      date = DateFormat('yyyy-MM-dd').format(_selectedDate!);
                       Calcium = false;
                       Grit = false;
                       Aloe = false;
                       AppleCiderVinegar = false;
                     });
                   }
+
+                  if (manHours.text.isNotEmpty) {
+                    FirebaseFirestore.instance.collection('ManHours').add({
+                      'Enterprise': 'Eggs',
+                      'ManHours': manHours.text,
+                      'Date': date,
+                    });
+                    setState(() {
+                      manHours.clear();
+                    });
+                  }
+
+                  setState(() {
+                    _selectedDate = DateTime.now();
+                    date = DateFormat('yyyy-MM-dd').format(_selectedDate!);
+                  });
                 },
                 child: Text('Submit'),
               ),

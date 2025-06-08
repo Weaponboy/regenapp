@@ -1,40 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:regendataapp/Colors.dart';
-import 'package:regendataapp/screens/CustomizeScreens/Fields.dart';
 import 'package:regendataapp/screens/DataScreens/FullDayData.dart';
-import 'package:regendataapp/screens/CustomizeScreens/MeatCuts.dart';
-import 'package:regendataapp/screens/DataEntryScreens/Soil_and_Carbon/Snow.dart';
+import 'package:regendataapp/screens/DataScreens/ManHours.dart';
+import 'package:regendataapp/screens/DataScreens/dairyGraphing.dart';
 import 'dart:math';
-
-import 'package:regendataapp/screens/DataEntryScreens/Soil_and_Carbon/SoilCarbon.dart';
 import 'package:regendataapp/screens/DataScreens/eggGraphing.dart';
 
-class Customize extends StatelessWidget {
+class Analytics extends StatelessWidget {
 
   final List<Map<String, dynamic>> cardData = [
-    {'id': '1', 'title': 'Meat cuts'},
-    {'id': '2', 'title': 'Manage users'},
-    {'id': '3', 'title': 'Fields'},
-    {'id': '4', 'title': 'Data analytics'},
+    {'id': '1', 'title': 'Day entries'},
+    {'id': '2', 'title': 'Egg graphs'},
+    {'id': '3', 'title': 'Dairy graphs'},
+    {'id': '4', 'title': 'Man hours'},
+    {'id': '5', 'title': 'Profit'},
+    {'id': '6', 'title': 'Stock'},
   ];
 
   void _navigateToPage(BuildContext context, String id) {
     Widget destinationPage;
     switch (id) {
       case '1':
-        destinationPage = MeatCutsScreen();
+        destinationPage = MultiCollectionDateSearchScreen();
         break;
       case '2':
         destinationPage = EggGraphing();
         break;
       case '3':
-        destinationPage = Fields();
+        destinationPage = DairyGraphing();
         break;
       case '4':
-        destinationPage = MultiCollectionDateSearchScreen();
+        destinationPage = ManHoursScreen();
         break;
       default:
-        destinationPage = Customize();
+        destinationPage = Analytics();
     }
     Navigator.push(
       context,
@@ -54,7 +53,7 @@ class Customize extends StatelessWidget {
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/wheat.jpeg'),
+            image: AssetImage('assets/data2.jpg'),
             fit: BoxFit.cover,
           ),
         ),
@@ -62,12 +61,12 @@ class Customize extends StatelessWidget {
           children: [
             // Title
             Positioned(
-              top: 20,
+              top: 120,
               left: 0,
               right: 0,
               child: Center(
                 child: Text(
-                  'Data entry',
+                  'Analytics',
                   style: TextStyle(
                     fontSize: 60,
                     fontFamily: 'Roboto', // Ensure Roboto is in pubspec.yaml
@@ -87,7 +86,7 @@ class Customize extends StatelessWidget {
             ...List.generate(cardData.length, (index) {
               final angle = 2 * pi * index / cardData.length;
               final x = (centerX + radius * cos(angle) - circleSize / 2);
-              final y = (centerY + radius * sin(angle) - circleSize / 2);
+              final y = (centerY + radius * sin(angle) - circleSize / 2) + 40;
 
               return Positioned(
                 left: x,
