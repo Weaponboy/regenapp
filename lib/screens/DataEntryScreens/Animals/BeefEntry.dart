@@ -9,7 +9,22 @@ class BeefEntry extends StatefulWidget {
 
 class BeefEntryState extends State<BeefEntry> {
 
-  final TextEditingController dateController = TextEditingController(text: DateFormat('yyyy-MM-dd').format(DateTime.now()));
+  DateTime? _selectedDate = DateTime.now();
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+  final TextEditingController noteController = TextEditingController();
 
   String? _selectedItem;
   List<String> _items = [];
@@ -63,28 +78,49 @@ class BeefEntryState extends State<BeefEntry> {
             SizedBox(height: 20),
 
             TextField(
-              controller: dateController,
-              decoration: InputDecoration(labelText: 'Date'),
-              keyboardType: TextInputType.datetime,
-              onChanged: (value) {
-                if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(value)) {
-                  dateController.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
-                }
-              },
+              controller: noteController,
+              decoration: InputDecoration(labelText: 'Notes'),
+            ),
+
+            SizedBox(height: 20),
+
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _selectedDate == null
+                        ? "Select a date"
+                        : DateFormat('yyyy-MM-dd').format(_selectedDate!),
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () => _selectDate(context),
+                  child: Text("Pick Date"),
+                ),
+              ],
             ),
 
             SizedBox(height: 20),
 
             ElevatedButton(
               onPressed: () {
+                String date = DateFormat('yyyy-MM-dd').format(_selectedDate!);
+
                 FirebaseFirestore.instance.collection('BeefData').add({
                   'Location': _selectedItem,
-                  'Date': dateController.text,
+                  'Date': date,
+                  'Notes': noteController.text
                 });
                 setState(() {
                   _selectedItem = null;
-                  dateController.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
+                  noteController.clear();
+                  _selectedItem = null;
+                  _selectedDate = DateTime.now();
+                  date = DateFormat('yyyy-MM-dd').format(_selectedDate!);
                 });
+
+                Navigator.pop(context);
               },
               child: Text('Submit'),
             ),

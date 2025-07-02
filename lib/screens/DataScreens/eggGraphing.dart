@@ -12,6 +12,7 @@ class _EggGraphingState extends State<EggGraphing> {
   String? _selectedMonth;
   List<String> _availableMonths = [];
   int _touchedIndex = -1;
+  Map<String, dynamic>? _selectedData;
 
   @override
   void initState() {
@@ -19,7 +20,6 @@ class _EggGraphingState extends State<EggGraphing> {
     _loadAvailableMonths();
   }
 
-  // Fetch available months from Firestore
   void _loadAvailableMonths() async {
     final snapshot = await FirebaseFirestore.instance.collection('ChickenData').orderBy('Date').get();
     final months = snapshot.docs
@@ -67,6 +67,8 @@ class _EggGraphingState extends State<EggGraphing> {
                 onChanged: (value) {
                   setState(() {
                     _selectedMonth = value;
+                    _selectedData = null;
+                    _touchedIndex = -1;
                   });
                 },
               ),
@@ -84,7 +86,6 @@ class _EggGraphingState extends State<EggGraphing> {
             return Center(child: CircularProgressIndicator());
           }
 
-          // Process data
           List<FlSpot> spots = [];
           List<String> dateLabels = [];
           final docs = snapshot.data!.docs.where((doc) {
@@ -106,92 +107,133 @@ class _EggGraphingState extends State<EggGraphing> {
             dateLabels.add(DateFormat('MM/dd').format(date));
           }
 
+          // Calculate interval based on maxY to avoid overlap
+          double maxY = spots.isNotEmpty
+              ? (spots.map((e) => e.y).reduce((a, b) => a > b ? a : b) * 1.2)
+              : 10;
+          double interval = (maxY / 5).ceilToDouble(); // Show ~5 labels, adjust as needed
+
           return Padding(
             padding: EdgeInsets.all(25),
-            child: SizedBox(
-              height: 350,
-              child: LineChart(
-                LineChartData(
-                  gridData: FlGridData(show: true),
-                  titlesData: FlTitlesData(
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, meta) {
-                          int index = value.toInt();
-                          if (index >= 0 && index < dateLabels.length) {
-                            return Text(dateLabels[index], style: TextStyle(fontSize: 12));
-                          }
-                          return Text('');
-                        },
-                        interval: 1,
-                      ),
-                    ),
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, meta) => Text(
-                          value.toInt().toString(),
-                          style: TextStyle(fontSize: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  height: 200,
+                  child: LineChart(
+                    LineChartData(
+                      gridData: FlGridData(show: true),
+                      titlesData: FlTitlesData(
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
                         ),
-                        reservedSize: 40,
-                      ),
-                    ),
-                    topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  ),
-                  borderData: FlBorderData(show: true),
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: spots,
-                      isCurved: true,
-                      color: Colors.blue,
-                      dotData: FlDotData(show: true),
-                      belowBarData: BarAreaData(show: true, color: Colors.blue.withOpacity(0.2)),
-                    ),
-                  ],
-                  lineTouchData: LineTouchData(
-                    enabled: true,
-                    touchTooltipData: LineTouchTooltipData(
-                      maxContentWidth: 50,
-                      getTooltipItems: (touchedSpots) {
-                        return touchedSpots.map((spot) {
-                          final index = spot.x.toInt();
-                          final data = docs[index].data() as Map<String, dynamic>;
-                          final trueBooleans = <String>[];
-                          if (data['Calcium'] == true) trueBooleans.add('Calcium');
-                          if (data['Grit'] == true) trueBooleans.add('Grit');
-                          if (data['Aloe'] == true) trueBooleans.add('Aloe');
-                          if (data['AppleCiderVinegar'] == true) trueBooleans.add('AC');
-                          final booleanText = trueBooleans.isNotEmpty ? trueBooleans.join(', ') : 'None';
-                          return LineTooltipItem(
-                            '$booleanText',
-                            TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (value, meta) => Text(
+                              value.toInt().toString(),
+                              style: TextStyle(fontSize: 10), // Reduced font size
                             ),
-                          );
-                        }).toList();
-                      },
+                            reservedSize: 50, // Increased space for labels
+                            interval: interval, // Dynamic interval to reduce overlap
+                          ),
+                        ),
+                        topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      ),
+                      borderData: FlBorderData(show: true),
+                      lineBarsData: [
+                        LineChartBarData(
+                          spots: spots,
+                          isCurved: true,
+                          color: Colors.blue,
+                          dotData: FlDotData(show: true),
+                          belowBarData: BarAreaData(show: true, color: Colors.blue.withOpacity(0.2)),
+                        ),
+                      ],
+                      lineTouchData: LineTouchData(
+                        enabled: true,
+                        touchCallback: (FlTouchEvent event, LineTouchResponse? touchResponse) {
+                          if (event.isInterestedForInteractions && touchResponse != null && touchResponse.lineBarSpots != null) {
+                            setState(() {
+                              _touchedIndex = touchResponse.lineBarSpots!.first.spotIndex;
+                              _selectedData = docs[_touchedIndex].data() as Map<String, dynamic>;
+                            });
+                          } else if (event is FlTouchEvent && event.isInterestedForInteractions) {
+                            setState(() {
+                              _touchedIndex = -1;
+                              _selectedData = null;
+                            });
+                          }
+                        },
+                        touchTooltipData: LineTouchTooltipData(
+                          maxContentWidth: 50,
+                          getTooltipItems: (touchedSpots) {
+                            return touchedSpots.map((spot) {
+                              final index = spot.x.toInt();
+                              final data = docs[index].data() as Map<String, dynamic>;
+                              return LineTooltipItem(
+                                '${data['Number of eggs'] ?? 0} eggs',
+                                TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                ),
+                              );
+                            }).toList();
+                          },
+                        ),
+                        handleBuiltInTouches: true,
+                        getTouchedSpotIndicator: (barData, spotIndexes) {
+                          return spotIndexes.map((index) {
+                            return TouchedSpotIndicatorData(
+                              FlLine(color: Colors.black, strokeWidth: 2),
+                              FlDotData(show: true),
+                            );
+                          }).toList();
+                        },
+                      ),
+                      minX: 0,
+                      maxX: (docs.length - 1).toDouble(),
+                      minY: 0,
+                      maxY: maxY,
                     ),
-                    handleBuiltInTouches: true,
-                    getTouchedSpotIndicator: (barData, spotIndexes) {
-                      return spotIndexes.map((index) {
-                        return TouchedSpotIndicatorData(
-                          FlLine(color: Colors.black, strokeWidth: 2),
-                          FlDotData(show: true),
-                        );
-                      }).toList();
-                    },
                   ),
-                  minX: 0,
-                  maxX: (docs.length - 1).toDouble(),
-                  minY: 0,
-                  maxY: spots.isNotEmpty
-                      ? (spots.map((e) => e.y).reduce((a, b) => a > b ? a : b) * 1.2)
-                      : 10,
                 ),
-              ),
+                SizedBox(height: 20),
+                if (_selectedData != null) ...[
+                  Text(
+                    'Selected Data:',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Date: ${DateFormat('MM/dd/yyyy').format(
+                      _selectedData!['Date'] is Timestamp
+                          ? (_selectedData!['Date'] as Timestamp).toDate()
+                          : DateTime.parse(_selectedData!['Date'] as String),
+                    )}',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  Text(
+                    'Eggs: ${_selectedData!['Number of eggs'] ?? 0}',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  Text(
+                    'Supplements: ${[
+                      if (_selectedData!['Calcium'] == true) 'Calcium',
+                      if (_selectedData!['Grit'] == true) 'Grit',
+                      if (_selectedData!['Aloe'] == true) 'Aloe',
+                      if (_selectedData!['AppleCiderVinegar'] == true) 'AC',
+                    ].isNotEmpty ? [
+                      if (_selectedData!['Calcium'] == true) 'Calcium',
+                      if (_selectedData!['Grit'] == true) 'Grit',
+                      if (_selectedData!['Aloe'] == true) 'Aloe',
+                      if (_selectedData!['AppleCiderVinegar'] == true) 'AC',
+                    ].join(', ') : 'None'}',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                ],
+              ],
             ),
           );
         },

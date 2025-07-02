@@ -220,6 +220,9 @@ class EggsEntrStatey extends State<EggsEntry> {
                     _selectedDate = DateTime.now();
                     date = DateFormat('yyyy-MM-dd').format(_selectedDate!);
                   });
+
+                  Navigator.pop(context);
+
                 },
                 child: Text('Submit'),
               ),

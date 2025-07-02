@@ -89,7 +89,7 @@ class ButcheryEntryState extends State<ButcheryEntry> {
       };
       _cutControllers.forEach((cut, controller) {
         if (controller.text.isNotEmpty) {
-          data['${cut}_value'] = double.tryParse(controller.text) ?? 0.0;
+          data['${cut}_value'] = int.tryParse(controller.text) ?? 0;
         }
       });
 

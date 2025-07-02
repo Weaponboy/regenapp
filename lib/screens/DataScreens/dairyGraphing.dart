@@ -12,6 +12,7 @@ class DairyGraphingState extends State<DairyGraphing> {
   String? _selectedMonth;
   List<String> _availableMonths = [];
   int _touchedIndex = -1;
+  Map<String, dynamic>? _selectedData;
 
   @override
   void initState() {
@@ -19,7 +20,6 @@ class DairyGraphingState extends State<DairyGraphing> {
     _loadAvailableMonths();
   }
 
-  // Fetch available months from Firestore
   void _loadAvailableMonths() async {
     final snapshot = await FirebaseFirestore.instance.collection('DairyData').orderBy('Date').get();
     final months = snapshot.docs
@@ -67,6 +67,8 @@ class DairyGraphingState extends State<DairyGraphing> {
                 onChanged: (value) {
                   setState(() {
                     _selectedMonth = value;
+                    _selectedData = null;
+                    _touchedIndex = -1;
                   });
                 },
               ),
@@ -84,7 +86,6 @@ class DairyGraphingState extends State<DairyGraphing> {
             return Center(child: CircularProgressIndicator());
           }
 
-          // Process data
           List<FlSpot> spots = [];
           List<String> dateLabels = [];
           final docs = snapshot.data!.docs.where((doc) {
@@ -98,94 +99,134 @@ class DairyGraphingState extends State<DairyGraphing> {
 
           for (int i = 0; i < docs.length; i++) {
             final data = docs[i].data() as Map<String, dynamic>;
-            final eggCount = (data['Amount of milk'] as num?)?.toDouble() ?? 0.0;
-            spots.add(FlSpot(i.toDouble(), eggCount));
+            final milkAmount = (data['Amount of milk'] as num?)?.toDouble() ?? 0.0;
+            spots.add(FlSpot(i.toDouble(), milkAmount));
             final date = (data['Date'] is Timestamp)
                 ? (data['Date'] as Timestamp).toDate()
                 : DateTime.parse(data['Date'] as String);
             dateLabels.add(DateFormat('MM/dd').format(date));
           }
 
+          double maxY = spots.isNotEmpty
+              ? (spots.map((e) => e.y).reduce((a, b) => a > b ? a : b) * 1.2)
+              : 10;
+          double interval = (maxY / 5).ceilToDouble();
+
           return Padding(
             padding: EdgeInsets.all(25),
-            child: SizedBox(
-              height: 350,
-              child: LineChart(
-                LineChartData(
-                  gridData: FlGridData(show: true),
-                  titlesData: FlTitlesData(
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, meta) {
-                          int index = value.toInt();
-                          if (index >= 0 && index < dateLabels.length) {
-                            return Text(dateLabels[index], style: TextStyle(fontSize: 12));
-                          }
-                          return Text('');
-                        },
-                        interval: 1,
-                      ),
-                    ),
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, meta) => Text(
-                          value.toInt().toString(),
-                          style: TextStyle(fontSize: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  height: 200,
+                  child: LineChart(
+                    LineChartData(
+                      gridData: FlGridData(show: true),
+                      titlesData: FlTitlesData(
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
                         ),
-                        reservedSize: 40,
-                      ),
-                    ),
-                    topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  ),
-                  borderData: FlBorderData(show: true),
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: spots,
-                      isCurved: true,
-                      color: Colors.blue,
-                      dotData: FlDotData(show: true),
-                      belowBarData: BarAreaData(show: true, color: Colors.blue.withOpacity(0.2)),
-                    ),
-                  ],
-                  lineTouchData: LineTouchData(
-                    enabled: true,
-                    touchTooltipData: LineTouchTooltipData(
-                      maxContentWidth: 50,
-                      getTooltipItems: (touchedSpots) {
-                        return touchedSpots.map((spot) {
-                          final index = spot.x.toInt();
-                          final data = docs[index].data() as Map<String, dynamic>;
-                          return LineTooltipItem(
-                            data['Amount of milk'].toString(),
-                            TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (value, meta) => Text(
+                              value.toInt().toString(),
+                              style: TextStyle(fontSize: 10),
                             ),
-                          );
-                        }).toList();
-                      },
+                            reservedSize: 50,
+                            interval: interval,
+                          ),
+                        ),
+                        topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      ),
+                      borderData: FlBorderData(show: true),
+                      lineBarsData: [
+                        LineChartBarData(
+                          spots: spots,
+                          isCurved: true,
+                          color: Colors.blue,
+                          dotData: FlDotData(show: true),
+                          belowBarData: BarAreaData(show: true, color: Colors.blue.withOpacity(0.2)),
+                        ),
+                      ],
+                      lineTouchData: LineTouchData(
+                        enabled: true,
+                        touchCallback: (FlTouchEvent event, LineTouchResponse? touchResponse) {
+                          if (event.isInterestedForInteractions && touchResponse != null && touchResponse.lineBarSpots != null) {
+                            setState(() {
+                              _touchedIndex = touchResponse.lineBarSpots!.first.spotIndex;
+                              _selectedData = docs[_touchedIndex].data() as Map<String, dynamic>;
+                            });
+                          } else if (event is FlTouchEvent && event.isInterestedForInteractions) {
+                            setState(() {
+                              _touchedIndex = -1;
+                              _selectedData = null;
+                            });
+                          }
+                        },
+                        touchTooltipData: LineTouchTooltipData(
+                          maxContentWidth: 50,
+                          getTooltipItems: (touchedSpots) {
+                            return touchedSpots.map((spot) {
+                              final index = spot.x.toInt();
+                              final data = docs[index].data() as Map<String, dynamic>;
+                              return LineTooltipItem(
+                                '${data['Amount of milk'] ?? 0} L',
+                                TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                ),
+                              );
+                            }).toList();
+                          },
+                        ),
+                        handleBuiltInTouches: true,
+                        getTouchedSpotIndicator: (barData, spotIndexes) {
+                          return spotIndexes.map((index) {
+                            return TouchedSpotIndicatorData(
+                              FlLine(color: Colors.black, strokeWidth: 2),
+                              FlDotData(show: true),
+                            );
+                          }).toList();
+                        },
+                      ),
+                      minX: 0,
+                      maxX: (docs.length - 1).toDouble(),
+                      minY: 0,
+                      maxY: maxY,
                     ),
-                    handleBuiltInTouches: true,
-                    getTouchedSpotIndicator: (barData, spotIndexes) {
-                      return spotIndexes.map((index) {
-                        return TouchedSpotIndicatorData(
-                          FlLine(color: Colors.black, strokeWidth: 2),
-                          FlDotData(show: true),
-                        );
-                      }).toList();
-                    },
                   ),
-                  minX: 0,
-                  maxX: (docs.length - 1).toDouble(),
-                  minY: 0,
-                  maxY: spots.isNotEmpty
-                      ? (spots.map((e) => e.y).reduce((a, b) => a > b ? a : b) * 1.2)
-                      : 10,
                 ),
-              ),
+                SizedBox(height: 20),
+                if (_selectedData != null) ...[
+                  Text(
+                    'Selected Data:',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Date: ${DateFormat('MM/dd/yyyy').format(
+                      _selectedData!['Date'] is Timestamp
+                          ? (_selectedData!['Date'] as Timestamp).toDate()
+                          : DateTime.parse(_selectedData!['Date'] as String),
+                    )}',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  Text(
+                    'Milk: ${_selectedData!['Amount of milk'] ?? 0} L',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  Text(
+                    'Number of cows milked: ${_selectedData!['Cows milked'] ?? 'Unknown'}',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  Text(
+                    'Location: ${_selectedData!['Location of the cows'] ?? 'Unknown'}',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                ],
+              ],
             ),
           );
         },

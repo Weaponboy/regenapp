@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:regendataapp/screens/DataEntryScreens/Management/NewOrders.dart';
+import 'package:regendataapp/screens/DataEntryScreens/Management/ViewOrders.dart';
 
 class OrdersScreen extends StatelessWidget {
   const OrdersScreen({super.key});
@@ -20,7 +22,10 @@ class OrdersScreen extends StatelessWidget {
             const Spacer(),
             ElevatedButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/enter_order');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => NewOrderScreen()),
+                );
               },
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -35,7 +40,10 @@ class OrdersScreen extends StatelessWidget {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/view_orders');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => OrderWeekSearchScreen()),
+                );
               },
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),

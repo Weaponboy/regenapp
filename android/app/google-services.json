@@ -12,7 +12,20 @@
           "package_name": "dev.weaponboy.regendataapp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "234895274446-0l4g976hrnc61vl34sj32g57ru6bekip.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "dev.weaponboy.regendataapp",
+            "certificate_hash": "8548e2104317fe023aecce504a68dbe1d144f8cf"
+          }
+        },
+        {
+          "client_id": "234895274446-1710qatf9vk6jam4no2oto3soaru039c.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCqmR8hzc5Roi_m3pr3EM1lk5mPmhL41Qw"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "234895274446-1710qatf9vk6jam4no2oto3soaru039c.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "234895274446-n9va53rohqn5m87ggutmvcn4k5jad9fp.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "dev.weaponboy.regendataapp"
+              }
+            }
+          ]
         }
       }
     }

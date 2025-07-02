@@ -8,7 +8,7 @@ class MultiCollectionDateSearchScreen extends StatefulWidget {
 }
 
 class _MultiCollectionDateSearchScreenState extends State<MultiCollectionDateSearchScreen> {
-  DateTime? _selectedDate;
+  DateTime? _selectedDate = DateTime.now();
   final List<String> _collections = ['ChickenData', 'CowData', 'HomeFlock', 'DairyData'];
 
   Future<void> _selectDate(BuildContext context) async {

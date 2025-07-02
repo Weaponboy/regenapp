@@ -58,7 +58,6 @@ class _DairyEntryState extends State<DairyEntry> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SizedBox(height: 90),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -87,6 +86,7 @@ class _DairyEntryState extends State<DairyEntry> {
                           date = DateFormat('yyyy-MM-dd').format(_selectedDate!);
                         });
                       }
+                      Navigator.pop(context);
                     },
                     child: Text('Submit'),
                   ),
@@ -164,6 +164,8 @@ class _DairyEntryState extends State<DairyEntry> {
                           date = DateFormat('yyyy-MM-dd').format(_selectedDate!);
                         });
                       }
+
+                      Navigator.pop(context);
                     },
                     child: Text('Submit'),
                   ),
@@ -235,6 +237,8 @@ class _DairyEntryState extends State<DairyEntry> {
                       date = DateFormat('yyyy-MM-dd').format(_selectedDate!);
                     });
                   }
+
+                  Navigator.pop(context);
                 },
                 child: Text('Submit All'),
               ),

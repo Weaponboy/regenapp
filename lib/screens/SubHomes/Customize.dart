@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:regendataapp/Colors.dart';
 import 'package:regendataapp/screens/CustomizeScreens/CashCategories.dart';
 import 'package:regendataapp/screens/CustomizeScreens/Customers.dart';
+import 'package:regendataapp/screens/CustomizeScreens/DeliveryLocations.dart';
 import 'package:regendataapp/screens/CustomizeScreens/Fields.dart';
+import 'package:regendataapp/screens/CustomizeScreens/Products.dart';
 import 'package:regendataapp/screens/DataScreens/FullDayData.dart';
 import 'package:regendataapp/screens/CustomizeScreens/MeatCuts.dart';
 import 'dart:math';
@@ -16,6 +18,8 @@ class Customize extends StatelessWidget {
     {'id': '3', 'title': 'Fields'},
     {'id': '4', 'title': 'Cash categories'},
     {'id': '5', 'title': 'Customers'},
+    {'id': '6', 'title': 'Delivery locations'},
+    {'id': '7', 'title': 'Products'},
   ];
 
   void _navigateToPage(BuildContext context, String id) {
@@ -35,6 +39,12 @@ class Customize extends StatelessWidget {
         break;
       case '5':
         destinationPage = Customers();
+        break;
+      case '6':
+        destinationPage = DeliveryLocations();
+        break;
+      case '7':
+        destinationPage = Products();
         break;
       default:
         destinationPage = Customize();
