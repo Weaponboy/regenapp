@@ -18,6 +18,12 @@ class _OrderWeekSearchScreenState extends State<OrderWeekSearchScreen> {
   String? _selectedItem;
   List<String> _items = [];
 
+  List<String> _itemsCus = [];
+  List<String> _itemsLoc = [];
+
+  List<String> options = ["Location", "Customer"];
+  String? sortBy;
+
   int getWeekNumber(DateTime date) {
     return date.weekOfYear;
   }
@@ -32,7 +38,7 @@ class _OrderWeekSearchScreenState extends State<OrderWeekSearchScreen> {
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
-        _enforceFilterLimit();
+        // _enforceFilterLimit();
       });
     }
   }
@@ -41,43 +47,72 @@ class _OrderWeekSearchScreenState extends State<OrderWeekSearchScreen> {
     return _firestore.collection('Customers').snapshots();
   }
 
+  void updateItems(){
+    if (sortBy.toString() == options.first){
+      _selectedItem = null;
+      _items = _itemsLoc;
+    }else{
+      _selectedItem = null;
+      _items = _itemsCus;
+    }
+  }
+
   Future<void> _fetchLocations() async {
     QuerySnapshot snapshot =
     await FirebaseFirestore.instance.collection('DeliveryLocations').get();
     setState(() {
+      _itemsLoc = snapshot.docs.map((doc) => doc['Location'] as String).toList();
       _items = snapshot.docs.map((doc) => doc['Location'] as String).toList();
     });
+
+    QuerySnapshot snapshot1 =
+    await FirebaseFirestore.instance.collection('Customers').get();
+    setState(() {
+      _itemsCus = snapshot1.docs.map((doc) => doc['Customer'] as String).toList();
+    });
+
   }
 
-  void _enforceFilterLimit() {
-    int activeFilters = 0;
-    if (_selectedDate != null) activeFilters++;
-    if (_selectedCustomer != null) activeFilters++;
-    if (_selectedItem != null) activeFilters++;
-
-    if (activeFilters > 2) {
-      setState(() {
-        if (_selectedDate != null) _selectedDate = null;
-        else if (_selectedCustomer != null) _selectedCustomer = null;
-        else if (_selectedItem != null) _selectedItem = null;
-      });
-    }
-  }
+  // void _enforceFilterLimit() {
+  //   int activeFilters = 0;
+  //   if (_selectedDate != null) activeFilters++;
+  //   if (_selectedCustomer != null) activeFilters++;
+  //   if (_selectedItem != null) activeFilters++;
+  //
+  //   if (activeFilters > 2) {
+  //     setState(() {
+  //       if (_selectedDate != null) _selectedDate = null;
+  //       else if (_selectedCustomer != null) _selectedCustomer = null;
+  //       else if (_selectedItem != null) _selectedItem = null;
+  //     });
+  //   }
+  // }
 
   Stream<QuerySnapshot> _getOrders() {
     Query<Map<String, dynamic>> query = _firestore.collection('orders');
 
-    if (_selectedCustomer != null) {
-      query = query.where('customerId', isEqualTo: _selectedCustomer);
-    }
-    if (_selectedItem != null) {
-      query = query.where('customerLocation', isEqualTo: _selectedItem);
-    }
+    // if (_selectedItem != null) {
+    //   final startOfDay = DateTime(_selectedDate!.year, _selectedDate!.month, _selectedDate!.day);
+    //   query = query.where('customerId', isEqualTo: _selectedItem)
+    //       .where('orderDate', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+    //       .where('orderDate', isLessThan: Timestamp.fromDate(startOfDay.add(Duration(days: 1))));
+    // }
+
     if (_selectedDate != null) {
       final startOfDay = DateTime(_selectedDate!.year, _selectedDate!.month, _selectedDate!.day);
-      query = query
-          .where('orderDate', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
-          .where('orderDate', isLessThan: Timestamp.fromDate(startOfDay.add(Duration(days: 1))));
+
+      if(sortBy.toString() == options.first){
+        query = query
+            .where('customerLocation', isEqualTo: _selectedItem)
+            .where('orderDate', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+            .where('orderDate', isLessThan: Timestamp.fromDate(startOfDay.add(Duration(days: 1))));
+      }else{
+        query = query
+            .where('customerId', isEqualTo: _selectedItem)
+            .where('orderDate', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+            .where('orderDate', isLessThan: Timestamp.fromDate(startOfDay.add(Duration(days: 1))));
+      }
+
     }
 
     return query.snapshots();
@@ -86,7 +121,9 @@ class _OrderWeekSearchScreenState extends State<OrderWeekSearchScreen> {
   @override
   void initState() {
     super.initState();
+    sortBy = options.first;
     _fetchLocations();
+    updateItems();
   }
 
   @override
@@ -115,36 +152,33 @@ class _OrderWeekSearchScreenState extends State<OrderWeekSearchScreen> {
                   ),
                 ],
               ),
+
               const SizedBox(height: 16),
-              StreamBuilder<QuerySnapshot>(
-                stream: getCustomers(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) return const CircularProgressIndicator();
-                  final customers = snapshot.data!.docs;
-                  return DropdownButtonFormField<String>(
-                    hint: const Text('Select Customer'),
-                    items: customers.map((doc) {
-                      return DropdownMenuItem(
-                        value: doc.id,
-                        child: Text('${doc['Customer']} - ${doc['Location']}'),
-                      );
-                    }).toList(),
-                    value: _selectedCustomer,
-                    onChanged: (value) => setState(() {
-                      _selectedCustomer = value;
-                      _customerLocation = customers
-                          .firstWhere((doc) => doc.id == value)['Location'];
-                      _enforceFilterLimit();
-                    }),
-                    validator: (value) => value == null ? 'Select a customer' : null,
+
+              DropdownButton<String>(
+                isExpanded: true,
+                value: sortBy,
+                hint: Text('Sort by'),
+                items: options.map((String item) {
+                  return DropdownMenuItem<String>(
+                    value: item,
+                    child: Text(item),
                   );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    sortBy = newValue;
+                    updateItems();
+                  });
                 },
               ),
+
               const SizedBox(height: 16),
+
               DropdownButton<String>(
                 isExpanded: true,
                 value: _selectedItem,
-                hint: Text('Sort by location'),
+                hint: Text('Select ' + sortBy.toString()),
                 items: _items.map((String item) {
                   return DropdownMenuItem<String>(
                     value: item,
@@ -154,11 +188,13 @@ class _OrderWeekSearchScreenState extends State<OrderWeekSearchScreen> {
                 onChanged: (String? newValue) {
                   setState(() {
                     _selectedItem = newValue;
-                    _enforceFilterLimit();
+                    // _enforceFilterLimit();
                   });
                 },
               ),
+
               const SizedBox(height: 16),
+
               StreamBuilder<QuerySnapshot>(
                 stream: _getOrders(),
                 builder: (context, snapshot) {

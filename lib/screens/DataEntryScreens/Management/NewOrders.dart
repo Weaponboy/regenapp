@@ -11,31 +11,13 @@ class NewOrderScreen extends StatefulWidget {
 }
 
 class _NewOrderScreenState extends State<NewOrderScreen> {
-
   DateTime? _selectedDate = DateTime.now();
   String? _selectedItem;
   List<String> _items = [];
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-    );
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
-  }
-
   final _formKey = GlobalKey<FormState>();
   String? _selectedCustomer;
   String? _customerLocation;
   List<Map<String, dynamic>> _products = [];
-  DateTime? _orderDate;
-  final _productNameController = TextEditingController();
   final _quantityController = TextEditingController();
 
   final _firestore = FirebaseFirestore.instance;
@@ -55,27 +37,112 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
           'name': _selectedItem,
           'quantity': int.parse(_quantityController.text),
         });
-        _productNameController.clear();
+        _selectedItem = null;
         _quantityController.clear();
       });
     }
   }
 
-  Future<void> _saveOrder() async {
-    if (_selectedDate != null && _products.length > 0) {
-      String date = DateFormat('yyyy-MM-dd').format(_selectedDate!);
+  Future<void> _editProduct(int index) async {
+    final product = _products[index];
+    _selectedItem = product['name'];
+    _quantityController.text = product['quantity'].toString();
 
-      await _firestore.collection('orders').add({
-        'customerId': _selectedCustomer,
-        'customerLocation': _customerLocation,
-        'products': _products,
-        'orderDate': Timestamp.fromDate(_selectedDate!), // Convert DateTime to Timestamp
-      });
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Edit Product'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButtonFormField<String>(
+                value: _selectedItem,
+                hint: const Text('Select a product'),
+                decoration: const InputDecoration(
+                  labelText: 'Product',
+                  border: OutlineInputBorder(),
+                ),
+                items: _items.map((String item) {
+                  return DropdownMenuItem<String>(
+                    value: item,
+                    child: Text(item),
+                  );
+                }).toList(),
+                onChanged: (value) => setState(() => _selectedItem = value),
+                validator: (value) => value == null ? 'Select a product' : null,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _quantityController,
+                decoration: const InputDecoration(
+                  labelText: 'Quantity',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) => value!.isEmpty ? 'Enter quantity' : null,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (_selectedItem != null && _quantityController.text.isNotEmpty) {
+                  setState(() {
+                    _products[index] = {
+                      'name': _selectedItem!,
+                      'quantity': int.parse(_quantityController.text),
+                    };
+                    _selectedItem = null;
+                    _quantityController.clear();
+                  });
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-      setState(() {
-        _products.clear();
-        _selectedDate = DateTime.now();
-      });
+  Future<void> _saveOrder(BuildContext context) async {
+    if (_selectedCustomer != null && _selectedDate != null && _products.isNotEmpty) {
+      try {
+        final weekNumber = DateFormat('w').format(_selectedDate!);
+        // print('Saving order with weekNumber: $weekNumber');
+
+        await _firestore.collection('orders').add({
+          'customerId': _selectedCustomer,
+          'customerLocation': _customerLocation,
+          'products': _products,
+          'orderDate': Timestamp.fromDate(_selectedDate!),
+          'weekNumber': weekNumber,
+          'createdAt': Timestamp.now(),
+        });
+        if (!mounted) return; // Check if widget is still mounted
+        setState(() {
+          _products.clear();
+          _selectedDate = DateTime.now();
+          _selectedCustomer = null;
+          _customerLocation = null;
+          _selectedItem = null;
+        });
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+      } catch (e) {
+        print('Error saving order: $e'); // Debug log
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error saving order: $e')),
+        );
+      }
     }
   }
 
@@ -86,11 +153,24 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
   }
 
   Future<void> _fetchLocations() async {
-    QuerySnapshot snapshot =
-    await FirebaseFirestore.instance.collection('Products').get();
+    QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('Products').get();
     setState(() {
       _items = snapshot.docs.map((doc) => doc['product'] as String).toList();
     });
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
   }
 
   @override
@@ -113,45 +193,50 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                     hint: const Text('Select Customer'),
                     items: customers.map((doc) {
                       return DropdownMenuItem(
-                        value: doc['Customer'] as String, // Use customer name as value
+                        value: doc['Customer'] as String,
                         child: Text('${doc['Customer']} - ${doc['Location']}'),
                       );
                     }).toList(),
                     onChanged: (value) => setState(() {
-                      _selectedCustomer = value; // Store customer name
-                      _customerLocation = customers
-                          .firstWhere((doc) => doc['Customer'] == value)['Location']; // Find location by name
+                      _selectedCustomer = value;
+                      _customerLocation = customers.firstWhere((doc) => doc['Customer'] == value)['Location'];
                     }),
                     validator: (value) => value == null ? 'Select a customer' : null,
                   );
                 },
               ),
-              const SizedBox(height: 22),
+              const SizedBox(height: 16),
+              // Date picker
               Row(
                 children: [
                   Expanded(
                     child: Text(
                       _selectedDate == null
-                          ? "Select a date"
+                          ? 'Select a date'
                           : DateFormat('yyyy-MM-dd').format(_selectedDate!),
-                      style: TextStyle(fontSize: 16),
+                      style: const TextStyle(fontSize: 16),
                     ),
                   ),
                   ElevatedButton(
                     onPressed: () => _selectDate(context),
-                    child: Text("Pick Date"),
+                    child: const Text('Pick Date'),
                   ),
                 ],
               ),
-              const SizedBox(height: 22),
+              const SizedBox(height: 16),
+              // Product input
               Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: DropdownButton<String>(
+                    child: DropdownButtonFormField<String>(
                       isExpanded: true,
                       value: _selectedItem,
-                      hint: Text('Select a product'),
+                      hint: const Text('Select a product'),
+                      decoration: const InputDecoration(
+                        labelText: 'Product',
+                        border: OutlineInputBorder(),
+                      ),
                       items: _items.map((String item) {
                         return DropdownMenuItem<String>(
                           value: item,
@@ -163,14 +248,18 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                           _selectedItem = newValue;
                         });
                       },
+                      validator: (value) => value == null ? 'Select a product' : null,
                     ),
                   ),
-                  const SizedBox(width:35),
+                  const SizedBox(width: 16),
                   SizedBox(
                     width: 100,
                     child: TextFormField(
                       controller: _quantityController,
-                      decoration: const InputDecoration(labelText: 'Quantity'),
+                      decoration: const InputDecoration(
+                        labelText: 'Quantity',
+                        border: OutlineInputBorder(),
+                      ),
                       keyboardType: TextInputType.number,
                       validator: (value) => value!.isEmpty ? 'Enter quantity' : null,
                     ),
@@ -181,25 +270,68 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                   ),
                 ],
               ),
+              const SizedBox(height: 16),
               // Product list
               Expanded(
                 child: ListView.builder(
-                  itemCount: _products.length,
+                  itemCount: _products.length,  
                   itemBuilder: (context, index) {
                     final product = _products[index];
                     return ListTile(
                       title: Text('${product['name']} (Qty: ${product['quantity']})'),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () => setState(() => _products.removeAt(index)),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit),
+                            onPressed: () => _editProduct(index),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () => setState(() => _products.removeAt(index)),
+                          ),
+                        ],
                       ),
                     );
                   },
                 ),
               ),
-
               ElevatedButton(
-                onPressed: _saveOrder,
+                onPressed: (){
+                  if (_selectedCustomer != null && _selectedDate != null && _products.isNotEmpty) {
+                    try {
+                      final weekNumber = DateFormat('w').format(_selectedDate!);
+                      // print('Saving order with weekNumber: $weekNumber');
+
+                      _firestore.collection('orders').add({
+                        'customerId': _selectedCustomer,
+                        'customerLocation': _customerLocation,
+                        'products': _products,
+                        'orderDate': Timestamp.fromDate(_selectedDate!),
+                        'weekNumber': weekNumber,
+                        'createdAt': Timestamp.now(),
+                      });
+
+                      if (!mounted) return; // Check if widget is still mounted
+                      setState(() {
+                        _products.clear();
+                        _selectedDate = DateTime.now();
+                        _selectedCustomer = null;
+                        _customerLocation = null;
+                        _selectedItem = null;
+                      });
+                      if (Navigator.canPop(context)) {
+                        Navigator.pop(context);
+                      }
+                    } catch (e) {
+                      print('Error saving order: $e'); // Debug log
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error saving order: $e')),
+                      );
+                    }
+                  }
+                },
                 child: const Text('Save Order'),
               ),
             ],
