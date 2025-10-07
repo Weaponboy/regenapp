@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:regendataapp/Colors.dart';
+import 'package:regendataapp/screens/DataEntryScreens/Animals/Beans/BeanInputs.dart';
+import 'package:regendataapp/screens/DataEntryScreens/Animals/Beans/WorkDone.dart';
 import 'package:regendataapp/screens/DataEntryScreens/Animals/BeansEntry.dart';
 import 'package:regendataapp/screens/DataEntryScreens/Animals/BeefEntry.dart';
 import 'package:regendataapp/screens/DataEntryScreens/Animals/DucksEntry.dart';
@@ -12,32 +14,28 @@ import 'package:regendataapp/screens/DataEntryScreens/Management/SlaughterEntry.
 import 'package:regendataapp/screens/DataEntryScreens/Management/TasksEntry.dart';
 import 'dart:math';
 
-import '../../LoginCode/CurrentUserData.dart';
+import '../../../LoginCode/CurrentUserData.dart';
 
-class Enterprises extends StatelessWidget {
+class BeansEntry extends StatelessWidget {
 
   final List<Map<String, dynamic>> cardData = [
-    {'id': '1', 'title': 'Dairy cows'},
-    {'id': '2', 'title': 'Beef cows'},
-    {'id': '3', 'title': 'Eggs'},
-    {'id': '4', 'title': 'Turkeys'},
-    {'id': '5', 'title': 'Ducks'},
-    {'id': '6', 'title': 'Pigs'},
-    {'id': '7', 'title': 'Home flock'},
-    {'id': '8', 'title': 'Beans'},
+    {'id': '1', 'title': 'Inputs'},
+    {'id': '2', 'title': 'Work done'},
+    {'id': '3', 'title': 'Irrigation'},
+    {'id': '4', 'title': 'Turkeys'}
   ];
 
   final currentUserData userData;
-  Enterprises({required this.userData});
+  BeansEntry({required this.userData});
 
   void _navigateToPage(BuildContext context, String id) {
     Widget destinationPage;
     switch (id) {
       case '1':
-        destinationPage = DairyEntry();
+        destinationPage = BeanInput(userData: userData);
         break;
       case '2':
-        destinationPage = BeefEntry();
+        destinationPage = BeanWorkDone(userData: userData);
         break;
       case '3':
         destinationPage = EggsEntry();
@@ -58,7 +56,7 @@ class Enterprises extends StatelessWidget {
         destinationPage = BeansEntry(userData: userData);
         break;
       default:
-        destinationPage = Enterprises(userData: userData);
+        destinationPage = BeansEntry(userData: userData);
     }
     Navigator.push(
       context,

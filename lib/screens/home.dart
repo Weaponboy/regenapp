@@ -22,7 +22,7 @@ class HomeScreen extends StatelessWidget {
     Widget destinationPage;
     switch (id) {
       case '1':
-        destinationPage = Enterprises();
+        destinationPage = Enterprises(userData: userData);
         break;
       case '2':
         destinationPage = ManagementDataEntry(userData: userData);
